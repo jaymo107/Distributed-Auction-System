@@ -4,11 +4,11 @@ import java.rmi.RemoteException;
 /**
  * The remote interface of methods and attributes to be used
  * by the clients, the implementations for these skeletons
- * will be in the 'AuctionServer'
+ * will be in the 'AuctionService'
  *
  * @author JamesDavies
  */
-public interface AuctionServerSpec extends Remote {
+public interface AuctionServiceSpec extends Remote {
 
     /**
      * Create a new auction given an item.
@@ -24,9 +24,8 @@ public interface AuctionServerSpec extends Remote {
      *
      * @param auctionId The ID of the auction to bid for.
      * @param amount    The amount to bid by.
-     * @return int      The success number.
      */
-    public int bid(int auctionId, int amount);
+    public void bid(int auctionId, int amount);
 
     /**
      * Print out a list of the current auctions;
