@@ -5,16 +5,13 @@ import java.rmi.Naming;
  *
  * @author JamesDavies
  */
-public class BuyerClient {
+public class BuyerClient extends Client{
+
+    public BuyerClient() {
+        AuctionService service = super.connect();
+    }
 
     public static void main(String[] args) {
-
-        try {
-            AuctionServiceSpec service = (AuctionServiceSpec)
-                    Naming.lookup("rmi://localhost/AuctionService");
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        new BuyerClient();
     }
 }
