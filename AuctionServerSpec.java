@@ -26,7 +26,7 @@ public interface AuctionServerSpec extends Remote {
      * @param amount    The amount to bid by.
      * @return int      The success number.
      */
-    public int bid(String auctionId, int amount);
+    public int bid(int auctionId, int amount);
 
     /**
      * Print out a list of the current auctions;
