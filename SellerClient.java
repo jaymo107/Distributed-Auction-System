@@ -10,7 +10,7 @@ public class SellerClient {
 
     public static void main(String[] args) throws Exception {
 
-        //AuctionServerSpec connection = (AuctionServerSpec) Naming.lookup("rmi://127.0.0.1/auction");
+        //AuctionServiceSpec connection = (AuctionServiceSpec) Naming.lookup("rmi://127.0.0.1/auction");
 
     }
 }

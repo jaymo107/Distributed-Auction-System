@@ -11,6 +11,8 @@ public class Auction {
     private int id;
     private String sellerId;
     private Date createdAt;
+    private int currentBid;
+    private boolean isActive;
 
     /**
      * Create an Auction with the item to sell and the seller.
@@ -24,6 +26,27 @@ public class Auction {
         this.sellerId = sellerId;
         this.createdAt = new Date();
         this.id = id;
+        this.currentBid = 0;
+        this.isActive = true;
+    }
+
+    /**
+     * Increase the current bid, returns true if the bid has
+     * successfully been made.
+     *
+     * @param amount The Amount to bid on the item for.
+     */
+    public synchronized void bid(int amount) {
+        if (isActive()) {
+            this.currentBid += amount;
+        }
+    }
+
+    /**
+     * End the current auction.
+     */
+    public void closeAuction() {
+        this.isActive = false;
     }
 
     /**
@@ -52,5 +75,19 @@ public class Auction {
      */
     public Date getCreatedAt() {
         return createdAt;
+    }
+
+    /**
+     * @return int
+     */
+    public int getCurrentBid() {
+        return currentBid;
+    }
+
+    /**
+     * @return boolean
+     */
+    public boolean isActive() {
+        return isActive;
     }
 }
