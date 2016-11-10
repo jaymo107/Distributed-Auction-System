@@ -1,6 +1,8 @@
 /**
  * An object which can be sold within the auction class. Holds
  * the information about the item such as pricing.
+ *
+ * @author JamesDavies
  */
 public class Item {
     private int startingPrice;
