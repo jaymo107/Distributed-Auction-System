@@ -17,7 +17,7 @@ public interface AuctionServiceSpec extends Remote {
      * @param sellerId The seller identifier.
      * @return int     Return the Auction ID
      */
-    public int createAuction(Item item, String sellerId);
+    int createAuction(Item item, String sellerId) throws RemoteException;
 
     /**
      * Place a bid in an auction.
@@ -25,11 +25,11 @@ public interface AuctionServiceSpec extends Remote {
      * @param auctionId The ID of the auction to bid for.
      * @param amount    The amount to bid by.
      */
-    public void bid(int auctionId, int amount);
+    void bid(int auctionId, int amount) throws RemoteException;
 
     /**
      * Print out a list of the current auctions;
      */
-    public void browseAuctions();
+    void browseAuctions() throws RemoteException;
 
 }

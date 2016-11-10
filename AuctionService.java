@@ -24,7 +24,7 @@ public class AuctionService extends UnicastRemoteObject implements AuctionServic
      * @param sellerId The seller identifier.
      * @return int     Return the Auction ID
      */
-    public int createAuction(Item item, String sellerId) {
+    public int createAuction(Item item, String sellerId) throws RemoteException{
         int key = auctions.size();
         auctions.put(key, new Auction(item, sellerId, key));
         return key;
@@ -35,7 +35,7 @@ public class AuctionService extends UnicastRemoteObject implements AuctionServic
      * @param amount    The amount to bid by.
      * @return int      The success number.
      */
-    public void bid(int auctionId, int amount) {
+    public void bid(int auctionId, int amount) throws RemoteException{
         if (!auctions.containsKey(auctionId)) {
             System.out.println("There was no item found with that ID, please try again.");
             return;
@@ -45,7 +45,7 @@ public class AuctionService extends UnicastRemoteObject implements AuctionServic
         System.out.println("Bid placed for item ID: " + auctionId + " for £" + amount);
     }
 
-    public void browseAuctions() {
+    public void browseAuctions() throws RemoteException{
 
     }
 }
