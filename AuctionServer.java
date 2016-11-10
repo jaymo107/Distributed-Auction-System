@@ -1,4 +1,5 @@
-import java.rmi.Naming;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
 /**
  * The server class to run and serve the remote object to the
@@ -13,8 +14,10 @@ public class AuctionServer {
      */
     public AuctionServer() {
         try {
-            AuctionService service = new AuctionService();
-            Naming.rebind("rmi://localhost/AuctionService", service);
+            Registry registry = LocateRegistry.createRegistry(1098);
+            
+            registry.rebind("rmi://localhost/AuctionService", new AuctionService());
+            System.out.println("Server started...");
         }
         catch (Exception e) {
             System.out.println("Server Error: " + e);
