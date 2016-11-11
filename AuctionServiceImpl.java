@@ -37,12 +37,12 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements AuctionSe
      */
     public void bid(int auctionId, int amount) throws RemoteException{
         if (!auctions.containsKey(auctionId)) {
-            System.out.println("There was no item found with that ID, please try again.");
+            System.out.println("ERROR: There was no item found with that ID, please try again.");
             return;
         }
 
         auctions.get(auctionId).bid(amount);
-        System.out.println("Bid placed for item ID: " + auctionId + " for £" + amount);
+        System.out.println("LOG: Bid placed for item ID: " + auctionId + " for £" + amount);
     }
 
     public void browseAuctions() throws RemoteException{
