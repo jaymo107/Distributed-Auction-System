@@ -1,5 +1,3 @@
-import java.rmi.Naming;
-
 /**
  * The client which will bid on an auction.
  *
