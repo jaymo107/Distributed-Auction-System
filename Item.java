@@ -1,10 +1,12 @@
+import java.io.Serializable;
+
 /**
  * An object which can be sold within the auction class. Holds
  * the information about the item such as pricing.
  *
  * @author JamesDavies
  */
-public class Item {
+public class Item implements Serializable {
     private int startingPrice;
     private String description;
     private int reservePrice;
