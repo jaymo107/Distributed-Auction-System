@@ -1,3 +1,5 @@
+import sun.tools.java.Environment;
+
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
@@ -14,6 +16,7 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements AuctionSe
 
     public AuctionServiceImpl() throws RemoteException {
         super();
+        this.auctions = new HashMap<>();
     }
 
     /**
@@ -24,7 +27,7 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements AuctionSe
      * @param sellerId The seller identifier.
      * @return int     Return the Auction ID
      */
-    public int createAuction(Item item, String sellerId) throws RemoteException{
+    public int createAuction(Item item, int sellerId) throws RemoteException {
         int key = auctions.size();
         auctions.put(key, new Auction(item, sellerId, key));
         return key;
@@ -35,7 +38,7 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements AuctionSe
      * @param amount    The amount to bid by.
      * @return int      The success number.
      */
-    public void bid(int auctionId, int amount) throws RemoteException{
+    public void bid(int auctionId, int amount) throws RemoteException {
         if (!auctions.containsKey(auctionId)) {
             System.out.println("ERROR: There was no item found with that ID, please try again.");
             return;
@@ -45,12 +48,29 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements AuctionSe
         System.out.println("LOG: Bid placed for item ID: " + auctionId + " for £" + amount);
     }
 
-    public void browseAuctions() throws RemoteException{
+    public String browseAuctions() throws RemoteException {
+        if(this.getAuctions().size() <= 0) {
+            return "NOTICE: There are currently no auctions in place. Create one!";
+        }
 
+        StringBuilder builder = new StringBuilder();
+
+        for (int i = 0; i < this.auctions.size(); i++) {
+            builder.append(this.auctions.get(i).getCurrentBid());
+            builder.append("\t");
+            builder.append(this.auctions.get(i).getItem().getDescription());
+            builder.append("\n");
+        }
+
+        return String.valueOf(this.auctions.size());
     }
 
-
-    public void sayHello() throws RemoteException {
-        System.out.println("THis is coming from the server!");
+    /**
+     * Get the auctions hashmap.
+     *
+     * @return
+     */
+    public HashMap<Integer, Auction> getAuctions() throws RemoteException {
+        return this.auctions;
     }
 }

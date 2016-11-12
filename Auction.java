@@ -9,7 +9,7 @@ import java.util.Date;
 public class Auction {
     private Item item;
     private int id;
-    private String sellerId;
+    private int sellerId;
     private Date createdAt;
     private int currentBid;
     private boolean isActive;
@@ -21,7 +21,7 @@ public class Auction {
      * @param sellerId The identifier of the seller.
      * @param id       The generated ID for this current auction.
      */
-    public Auction(Item item, String sellerId, int id) {
+    public Auction(Item item, int sellerId, int id) {
         this.item = item;
         this.sellerId = sellerId;
         this.createdAt = new Date();
@@ -50,9 +50,9 @@ public class Auction {
     }
 
     /**
-     * @return String
+     * @return int
      */
-    public String getSellerId() {
+    public int getSellerId() {
         return sellerId;
     }
 

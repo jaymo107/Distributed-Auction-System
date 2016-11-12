@@ -1,5 +1,6 @@
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.HashMap;
 
 /**
  * The remote interface of methods and attributes to be used
@@ -10,6 +11,8 @@ import java.rmi.RemoteException;
  */
 public interface AuctionService extends Remote {
 
+    HashMap<Integer, Auction> auctions = new HashMap<>();
+
     /**
      * Create a new auction given an item.
      *
@@ -17,7 +20,7 @@ public interface AuctionService extends Remote {
      * @param sellerId The seller identifier.
      * @return int     Return the Auction ID
      */
-    int createAuction(Item item, String sellerId) throws RemoteException;
+    int createAuction(Item item, int sellerId) throws RemoteException;
 
     /**
      * Place a bid in an auction.
@@ -30,8 +33,12 @@ public interface AuctionService extends Remote {
     /**
      * Print out a list of the current auctions;
      */
-    void browseAuctions() throws RemoteException;
+    String browseAuctions() throws RemoteException;
 
-    void sayHello() throws RemoteException;
+    /**
+     * Get the hashmap containing the auctions and their keys.
+     * @return
+     */
+    HashMap<Integer, Auction> getAuctions() throws RemoteException;
 
 }
