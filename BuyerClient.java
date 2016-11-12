@@ -1,3 +1,5 @@
+import java.rmi.RemoteException;
+
 /**
  * The client which will bid on an auction.
  *
@@ -5,11 +7,11 @@
  */
 public class BuyerClient extends Client{
 
-    public BuyerClient() {
-        AuctionService service = super.connect();
+    public BuyerClient() throws RemoteException {
+        super();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws RemoteException {
         new BuyerClient();
     }
 }
