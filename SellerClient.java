@@ -1,6 +1,5 @@
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -14,14 +13,32 @@ public class SellerClient implements AuctionClient {
     private AuctionService service;
     private int clientId;
     private Scanner input;
+    private String email;
+    private String name;
 
     public SellerClient() throws RemoteException {
         try {
             this.service = (AuctionService) LocateRegistry.getRegistry(1098)
                     .lookup("rmi://localhost/AuctionService");
+
             this.clientId = new Random().nextInt(1000);
+
+            System.out.println("Hello, before we start, please enter the following information...");
             input = new Scanner(System.in);
-            System.out.println("Success! Connected to Auction server!\nPlease type a command to get started:\n-------------------------------------------");
+
+            while (true) {
+                System.out.println("Enter email:");
+                this.email = this.input.nextLine();
+                if (this.email.indexOf("@") > 0) break;
+            }
+
+            while (true) {
+                System.out.println("Enter name:");
+                this.name = this.input.nextLine();
+                if (this.name.length() > 0) break;
+            }
+
+            System.out.println("Success! Connected to Auction server!\n\n1: List the auctions\n2: Create a new auction\n3: Close an auction\n-------------------------------------------");
             this.getInput();
         } catch (Exception e) {
             e.printStackTrace();
@@ -36,49 +53,45 @@ public class SellerClient implements AuctionClient {
         while (true) {
             currentCommand = this.input.nextLine();
             if (currentCommand.equalsIgnoreCase("exit")) break;
-            System.out.println(currentCommand);
-            this.executeCommand(currentCommand);
-        }
-    }
 
-    /**
-     * Execute the associated command.
-     *
-     * @param command The command typed in by the user.
-     */
-    public void executeCommand(String command) throws RemoteException {
-        String description;
-        int startPrice;
-        int reservePrice;
-
-        // Browse the auctions
-        if (command.equalsIgnoreCase("list")) {
-            System.out.println(this.service.browseAuctions());
-            return;
-        }
-
-        // Create a new auction
-        if (command.equalsIgnoreCase("create")) {
-            System.out.println("MAKE NEW");
-            while (true) {
-                System.out.println("-------------------------------------------\nPlease enter a description for this item:");
-                description = this.input.nextLine();
-                System.out.println("Please enter a starting price for this item:");
-                startPrice = this.input.nextInt();
-                System.out.println("Please enter a reserve price:");
-                reservePrice = this.input.nextInt();
-                if (!description.isEmpty() && startPrice > 0 && reservePrice > 0) break;
+            // List the auctions
+            if (currentCommand.equals("1")) {
+                System.out.println(this.service.browseAuctions());
             }
 
-            int auctionId = service.createAuction(new Item(startPrice, reservePrice, description), this.clientId);
+            // List the auctions
+            if (currentCommand.equals("2")) {
+                String description;
+                int startingPrice;
+                int reservePrice;
 
-            if (auctionId > 0) {
-                System.out.println("SUCCESS: Auction created with ID of #" + auctionId);
+                while (true) {
+                    System.out.println("Please enter a short description of the item:");
+                    description = this.input.nextLine();
+                    if (description.length() > 0) break;
+                }
+
+                while (true) {
+                    System.out.println("Please enter a start price of this item (£):");
+                    startingPrice = this.input.nextInt();
+                    if (startingPrice > 0) break;
+                }
+
+                while (true) {
+                    System.out.println("Please enter a reserve price (£):");
+                    reservePrice = this.input.nextInt();
+                    if (reservePrice > 0) break;
+                }
+
+                Item item = new Item(startingPrice, reservePrice, description);
+
+                System.out.println(this.service.createAuction(item, this.email));
             }
         }
     }
+
 
     public static void main(String[] args) throws RemoteException {
-        new BuyerClient();
+        new SellerClient();
     }
 }

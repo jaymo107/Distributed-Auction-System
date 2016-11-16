@@ -1,6 +1,5 @@
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
-import java.util.Random;
 import java.util.Scanner;
 
 /**
@@ -12,6 +11,8 @@ public class BuyerClient implements AuctionClient {
 
     private AuctionService service;
     private Scanner input;
+    private String email;
+    private String name;
 
     public BuyerClient() throws RemoteException {
         try {
@@ -20,7 +21,21 @@ public class BuyerClient implements AuctionClient {
 
             input = new Scanner(System.in);
 
-            System.out.println("Success! Connected to Auction server!\nPlease type a command to get started:\n-------------------------------------------");
+            System.out.println("Hello, before we start, please enter the following information...");
+
+            while (true) {
+                System.out.println("Enter email:");
+                this.email = this.input.nextLine();
+                if (this.email.indexOf("@") > 0) break;
+            }
+
+            while (true) {
+                System.out.println("Enter name:");
+                this.name = this.input.nextLine();
+                if (this.name.length() > 0) break;
+            }
+
+            System.out.println("Thanks " + this.name + ", Connected to Auction server!\nPlease type a command to get started:\n1: Browse Auctions\n2: Bid on an Auction\n-------------------------------------------");
             this.getInput();
         } catch (Exception e) {
             e.printStackTrace();
@@ -35,37 +50,31 @@ public class BuyerClient implements AuctionClient {
         while (true) {
             currentCommand = this.input.nextLine();
             if (currentCommand.equalsIgnoreCase("exit")) return;
-            this.executeCommand(currentCommand);
-        }
-    }
 
-    /**
-     * Execute the associated command.
-     *
-     * @param command The command typed in by the user.
-     */
-    public void executeCommand(String command) throws RemoteException {
-        int auctionId;
-        int bidAmount;
-
-        // Browse the auctions
-        if (command.equalsIgnoreCase("list")) {
-            System.out.println(this.service.browseAuctions());
-            return;
-        }
-
-        // Create a new auction
-        if (command.equalsIgnoreCase("bid")) {
-            while (true) {
-                System.out.println("-------------------------------------------\nPlease enter the ID of the auction you want to bid:");
-                auctionId = this.input.nextInt();
-                System.out.println("Please enter how much you want to bid (£):");
-                bidAmount = this.input.nextInt();
-                if (auctionId > 0 && bidAmount > 0) break;
+            // List the auctions
+            if (currentCommand.equals("1")) {
+                System.out.println(this.service.browseAuctions());
             }
 
-            this.service.bid(auctionId, bidAmount);
-            // TODO: Send the client ID with the bid to keep track of who's winning
+            // Bid on an item
+            if (currentCommand.equals("2")) {
+                int auctionId = 0;
+                int amount = 0;
+
+                while (true) {
+                    System.out.println("Please enter the ID of the auction you want to bid:");
+                    auctionId = this.input.nextInt();
+                    if (auctionId > 0) break;
+                }
+
+                while (true) {
+                    System.out.println("Please enter the amount you want to bid (£):");
+                    amount = this.input.nextInt();
+                    if (amount > 0) break;
+                }
+
+                System.out.println(this.service.bid(auctionId, amount, this.email));
+            }
         }
     }
 
