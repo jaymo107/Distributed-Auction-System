@@ -17,10 +17,10 @@ public interface AuctionService extends Remote {
      * Create a new auction given an item.
      *
      * @param item     The item within the auction to bid for.
-     * @param sellerId The seller identifier.
+     * @param clientEmail The seller identifier.
      * @return int     Return the Auction ID
      */
-    int createAuction(Item item, int sellerId) throws RemoteException;
+    String createAuction(Item item, String clientEmail) throws RemoteException;
 
     /**
      * Place a bid in an auction.
@@ -28,7 +28,15 @@ public interface AuctionService extends Remote {
      * @param auctionId The ID of the auction to bid for.
      * @param amount    The amount to bid by.
      */
-    void bid(int auctionId, int amount) throws RemoteException;
+    String bid(int auctionId, int amount, String clientEmail) throws RemoteException;
+
+    /**
+     * Place a bid in an auction.
+     *
+     * @param auctionId    The ID of the auction to close.
+     * @param clientEmail  The email of the client closing the auction.
+     */
+    String closeAuction(int auctionId, String clientEmail) throws RemoteException;
 
     /**
      * Print out a list of the current auctions;
