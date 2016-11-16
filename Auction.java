@@ -9,7 +9,9 @@ import java.util.Date;
 public class Auction {
     private Item item;
     private int id;
-    private int sellerId;
+    private String sellerEmail;
+    private String sellerName;
+    private String highestBidderEmail;
     private Date createdAt;
     private int currentBid;
     private boolean isActive;
@@ -17,13 +19,13 @@ public class Auction {
     /**
      * Create an Auction with the item to sell and the seller.
      *
-     * @param item     The item within the auction.
-     * @param sellerId The identifier of the seller.
-     * @param id       The generated ID for this current auction.
+     * @param item        The item within the auction.
+     * @param sellerEmail The identifier of the seller.
+     * @param id          The generated ID for this current auction.
      */
-    public Auction(Item item, int sellerId, int id) {
+    public Auction(Item item, String sellerEmail, int id) {
         this.item = item;
-        this.sellerId = sellerId;
+        this.sellerEmail = sellerEmail;
         this.createdAt = new Date();
         this.id = id;
         this.currentBid = 0;
@@ -36,9 +38,22 @@ public class Auction {
      *
      * @param amount The Amount to bid on the item for.
      */
-    public synchronized void bid(int amount) {
-        if (isActive()) {
+    public synchronized void bid(int amount, String bidEmail) {
+
+        // Check if the auction is active
+        if (!isActive()) {
+            return;
+        }
+
+        // Trying to bid on own item
+        if (bidEmail.equalsIgnoreCase(this.sellerEmail)) {
+            return;
+        }
+
+        // Check that the bid is bigger than the current
+        if(amount > this.currentBid) {
             this.currentBid += amount;
+            this.highestBidderEmail = bidEmail;
         }
     }
 
@@ -47,13 +62,6 @@ public class Auction {
      */
     public void closeAuction() {
         this.isActive = false;
-    }
-
-    /**
-     * @return int
-     */
-    public int getSellerId() {
-        return sellerId;
     }
 
     /**
