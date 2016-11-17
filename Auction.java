@@ -10,11 +10,9 @@ public class Auction {
     private Item item;
     private int id;
     private String sellerEmail;
-    private String sellerName;
     private String highestBidderEmail;
     private Date createdAt;
     private int currentBid;
-    private boolean isActive;
 
     /**
      * Create an Auction with the item to sell and the seller.
@@ -28,8 +26,8 @@ public class Auction {
         this.sellerEmail = sellerEmail;
         this.createdAt = new Date();
         this.id = id;
-        this.currentBid = 0;
-        this.isActive = true;
+        this.currentBid = item.getStartingPrice();
+        this.highestBidderEmail = "";
     }
 
     /**
@@ -38,30 +36,21 @@ public class Auction {
      *
      * @param amount The Amount to bid on the item for.
      */
-    public synchronized void bid(int amount, String bidEmail) {
-
-        // Check if the auction is active
-        if (!isActive()) {
-            return;
-        }
+    public synchronized String bid(int amount, String bidEmail) {
 
         // Trying to bid on own item
         if (bidEmail.equalsIgnoreCase(this.sellerEmail)) {
-            return;
+            return "ERROR: You are trying to bid on your own auction.";
         }
 
         // Check that the bid is bigger than the current
-        if(amount > this.currentBid) {
-            this.currentBid += amount;
-            this.highestBidderEmail = bidEmail;
+        if (amount <= this.currentBid) {
+            return "ERROR: Bid must be higher than current bid.";
         }
-    }
 
-    /**
-     * End the current auction.
-     */
-    public void closeAuction() {
-        this.isActive = false;
+        this.currentBid = amount;
+        this.highestBidderEmail = bidEmail;
+        return "SUCCESS: Bid placed successfully for £" + this.currentBid;
     }
 
     /**
@@ -93,9 +82,16 @@ public class Auction {
     }
 
     /**
-     * @return boolean
+     * @return String
      */
-    public boolean isActive() {
-        return isActive;
+    public String getHighestBidderEmail() {
+        return highestBidderEmail;
+    }
+
+    /**
+     * @return String
+     */
+    public String getSellerEmail() {
+        return sellerEmail;
     }
 }

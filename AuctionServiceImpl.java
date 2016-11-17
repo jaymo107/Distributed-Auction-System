@@ -44,8 +44,7 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements AuctionSe
             return "ERROR: There was no item found with that ID, please try again.";
         }
 
-        auctions.get(auctionId).bid(amount, bidderEmail);
-        return "LOG: Bid placed for item ID: " + auctionId + " for £" + amount;
+        return auctions.get(auctionId).bid(amount, bidderEmail);
     }
 
     public String closeAuction(int auctionId, String clientEmail) throws RemoteException {
@@ -54,12 +53,25 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements AuctionSe
         }
 
         Auction auction = this.auctions.get(auctionId);
-        auction.closeAuction();
 
-        /**
-         * TODO: Find out the winning person here.
-         */
-        return "Auction closed, the winner of this auction was {NAME} with £" + auction.getCurrentBid();
+        if (!clientEmail.equalsIgnoreCase(auction.getSellerEmail())) {
+            return "ERROR: You are not the creator of this auction.";
+        }
+
+        if (auction.getCurrentBid() < auction.getItem().getReservePrice()) {
+            return "ERROR: Reserve price not met.";
+        }
+
+        if (auction.getHighestBidderEmail().isEmpty()) {
+            return "ERROR: There have been no bids yet.";
+        }
+
+        String winningEmail = auction.getHighestBidderEmail();
+        int winningBid = auction.getCurrentBid();
+
+        this.auctions.remove(auctionId);
+
+        return "MESSAGE: Item sold! The winner of this auction was " + winningEmail + " with £" + winningBid;
     }
 
     public String browseAuctions() throws RemoteException {
@@ -73,7 +85,7 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements AuctionSe
             builder.append("Auction ID: [" + this.auctions.get(i).getId() + "]\n");
             builder.append("Created: " + this.auctions.get(i).getCreatedAt().toString() + "\n");
             builder.append("Description: " + this.auctions.get(i).getItem().getDescription() + "\n");
-            builder.append("Current Bid: " + this.auctions.get(i).getCurrentBid() + "\n");
+            builder.append("Current Bid: £" + this.auctions.get(i).getCurrentBid() + "\n");
             builder.append("-------------------------------------------------------------------\n\n");
         }
 
