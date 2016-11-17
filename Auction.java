@@ -9,8 +9,8 @@ import java.util.Date;
 public class Auction {
     private Item item;
     private int id;
-    private String sellerEmail;
-    private String highestBidderEmail;
+    private User seller;
+    private User highestBidder;
     private Date createdAt;
     private int currentBid;
 
@@ -18,16 +18,16 @@ public class Auction {
      * Create an Auction with the item to sell and the seller.
      *
      * @param item        The item within the auction.
-     * @param sellerEmail The identifier of the seller.
+     * @param seller      The identifier of the seller.
      * @param id          The generated ID for this current auction.
      */
-    public Auction(Item item, String sellerEmail, int id) {
+    public Auction(Item item, User seller, int id) {
         this.item = item;
-        this.sellerEmail = sellerEmail;
+        this.seller = seller;
         this.createdAt = new Date();
         this.id = id;
         this.currentBid = item.getStartingPrice();
-        this.highestBidderEmail = "";
+        this.highestBidder = new User(null, null);
     }
 
     /**
@@ -35,11 +35,12 @@ public class Auction {
      * successfully been made.
      *
      * @param amount The Amount to bid on the item for.
+     * @param user   The user bidding on this item.
      */
-    public synchronized String bid(int amount, String bidEmail) {
+    public synchronized String bid(int amount, User user) {
 
         // Trying to bid on own item
-        if (bidEmail.equalsIgnoreCase(this.sellerEmail)) {
+        if (user.getEmail().equalsIgnoreCase(this.seller.getEmail())) {
             return "ERROR: You are trying to bid on your own auction.";
         }
 
@@ -49,7 +50,7 @@ public class Auction {
         }
 
         this.currentBid = amount;
-        this.highestBidderEmail = bidEmail;
+        this.highestBidder = user;
         return "SUCCESS: Bid placed successfully for £" + this.currentBid;
     }
 
@@ -82,16 +83,16 @@ public class Auction {
     }
 
     /**
-     * @return String
+     * @return User
      */
-    public String getHighestBidderEmail() {
-        return highestBidderEmail;
+    public User getHighestBidder() {
+        return highestBidder;
     }
 
     /**
-     * @return String
+     * @return User
      */
-    public String getSellerEmail() {
-        return sellerEmail;
+    public User getSeller() {
+        return this.seller;
     }
 }

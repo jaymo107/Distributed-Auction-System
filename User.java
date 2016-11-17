@@ -1,7 +1,9 @@
+import java.io.Serializable;
 /**
- * Created by JamesDavies on 16/11/2016.
+ * Base class for storing user information to pass to the
+ * RMI server.
  */
-public class User {
+public class User implements Serializable{
     private String email;
     private String name;
 

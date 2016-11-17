@@ -17,36 +17,31 @@ public interface AuctionService extends Remote {
      * Create a new auction given an item.
      *
      * @param item     The item within the auction to bid for.
-     * @param clientEmail The seller identifier.
+     * @param user     The seller identifier.
      * @return int     Return the Auction ID
      */
-    String createAuction(Item item, String clientEmail) throws RemoteException;
+    String createAuction(Item item, User user) throws RemoteException;
 
     /**
      * Place a bid in an auction.
      *
      * @param auctionId The ID of the auction to bid for.
      * @param amount    The amount to bid by.
+     * @param user      The user making the bid.
      */
-    String bid(int auctionId, int amount, String clientEmail) throws RemoteException;
+    String bid(int auctionId, int amount, User user) throws RemoteException;
 
     /**
      * Place a bid in an auction.
      *
      * @param auctionId    The ID of the auction to close.
-     * @param clientEmail  The email of the client closing the auction.
+     * @param user         The email of the client closing the auction.
      */
-    String closeAuction(int auctionId, String clientEmail) throws RemoteException;
+    String closeAuction(int auctionId, User user) throws RemoteException;
 
     /**
      * Print out a list of the current auctions;
      */
     String browseAuctions() throws RemoteException;
-
-    /**
-     * Get the hashmap containing the auctions and their keys.
-     * @return
-     */
-    HashMap<Integer, Auction> getAuctions() throws RemoteException;
 
 }

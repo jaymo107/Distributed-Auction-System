@@ -1,6 +1,5 @@
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
-import java.util.Random;
 import java.util.Scanner;
 
 /**
@@ -12,30 +11,28 @@ public class SellerClient implements AuctionClient {
 
     private AuctionService service;
     private Scanner input;
-    private String email;
-    private String name;
+    private User user;
 
     public SellerClient() throws RemoteException {
         try {
-            this.service = (AuctionService) LocateRegistry.getRegistry(1098)
-                    .lookup("rmi://localhost/AuctionService");
-
-            System.out.println("Hello, before we start, please enter the following information...");
+            this.service = (AuctionService) LocateRegistry.getRegistry(1098).lookup("rmi://localhost/AuctionService");
+            System.out.println("[AUCTION SELLER SYSTEM]\n\nHello, before we start, please enter the following information...");
             input = new Scanner(System.in);
 
+            String email;
+
+            // Get the email from the input, keep checking if not valid.
             while (true) {
                 System.out.println("Enter email:");
-                this.email = this.input.nextLine();
-                if (this.email.indexOf("@") > 0) break;
+                email = this.input.nextLine();
+
+                if (email.indexOf("@") > 0) break;
             }
 
-            while (true) {
-                System.out.println("Enter name:");
-                this.name = this.input.nextLine();
-                if (this.name.length() > 0) break;
-            }
+            // Create user object for the seller.
+            this.user = new User(email, null);
 
-            System.out.println("Success! Connected to Auction server!\n\n1: List the auctions\n2: Create a new auction\n3: Close an auction\n-------------------------------------------");
+            System.out.println("Success! You are connected to the Auction server!\n\n1: List the auctions\n2: Create a new auction\n3: Close an auction\n-------------------------------------------");
             this.getInput();
         } catch (Exception e) {
             e.printStackTrace();
@@ -76,7 +73,7 @@ public class SellerClient implements AuctionClient {
 
                 Item item = new Item(startingPrice, reservePrice, description);
 
-                System.out.println(this.service.createAuction(item, this.email));
+                System.out.println(this.service.createAuction(item, this.user));
             }
 
             // Close an auction
@@ -84,7 +81,7 @@ public class SellerClient implements AuctionClient {
                 System.out.println("Please enter the ID of the auction to close:");
                 int auctionId = this.input.nextInt();
 
-                System.out.println(this.service.closeAuction(auctionId, this.email));
+                System.out.println(this.service.closeAuction(auctionId, this.user));
             }
         }
     }
