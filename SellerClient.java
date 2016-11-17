@@ -11,7 +11,6 @@ import java.util.Scanner;
 public class SellerClient implements AuctionClient {
 
     private AuctionService service;
-    private int clientId;
     private Scanner input;
     private String email;
     private String name;
@@ -20,8 +19,6 @@ public class SellerClient implements AuctionClient {
         try {
             this.service = (AuctionService) LocateRegistry.getRegistry(1098)
                     .lookup("rmi://localhost/AuctionService");
-
-            this.clientId = new Random().nextInt(1000);
 
             System.out.println("Hello, before we start, please enter the following information...");
             input = new Scanner(System.in);
@@ -71,21 +68,23 @@ public class SellerClient implements AuctionClient {
                     if (description.length() > 0) break;
                 }
 
-                while (true) {
-                    System.out.println("Please enter a start price of this item (£):");
-                    startingPrice = this.input.nextInt();
-                    if (startingPrice > 0) break;
-                }
+                System.out.println("Please enter a start price of this item (£):");
+                startingPrice = this.input.nextInt();
 
-                while (true) {
-                    System.out.println("Please enter a reserve price (£):");
-                    reservePrice = this.input.nextInt();
-                    if (reservePrice > 0) break;
-                }
+                System.out.println("Please enter a reserve price (£):");
+                reservePrice = this.input.nextInt();
 
                 Item item = new Item(startingPrice, reservePrice, description);
 
                 System.out.println(this.service.createAuction(item, this.email));
+            }
+
+            // Close an auction
+            if (currentCommand.equals("3")) {
+                System.out.println("Please enter the ID of the auction to close:");
+                int auctionId = this.input.nextInt();
+
+                System.out.println(this.service.closeAuction(auctionId, this.email));
             }
         }
     }
