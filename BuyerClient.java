@@ -61,11 +61,8 @@ public class BuyerClient implements AuctionClient {
                 int auctionId = 0;
                 int amount = 0;
 
-                while (true) {
-                    System.out.println("Please enter the ID of the auction you want to bid:");
-                    auctionId = this.input.nextInt();
-                    if (auctionId > 0) break;
-                }
+                System.out.println("Please enter the ID of the auction you want to bid:");
+                auctionId = this.input.nextInt();
 
                 while (true) {
                     System.out.println("Please enter the amount you want to bid (£):");
