@@ -1,3 +1,4 @@
+import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.Scanner;
@@ -9,7 +10,7 @@ import java.util.Scanner;
  */
 public class BuyerClient implements AuctionClient {
 
-    private AuctionService service;
+    private BuyerService service;
     private Scanner input;
     private User user;
 
@@ -18,7 +19,7 @@ public class BuyerClient implements AuctionClient {
      */
     public BuyerClient() throws RemoteException {
         try {
-            this.service = (AuctionService) LocateRegistry.getRegistry(1098).lookup("rmi://localhost/AuctionService");
+            this.service = (BuyerService) LocateRegistry.getRegistry(1098).lookup("rmi://localhost/BuyerService");
 
             // Initialise the input stream for the commands
             input = new Scanner(System.in);
@@ -71,16 +72,16 @@ public class BuyerClient implements AuctionClient {
 
             // Bid on an item
             if (currentCommand.equals("2")) {
-                int auctionId = 0;
-                int amount = 0;
+                int auctionId;
+                BigDecimal amount;
 
                 System.out.println("Please enter the ID of the auction you want to bid:");
                 auctionId = this.input.nextInt();
 
                 while (true) {
                     System.out.println("Please enter the amount you want to bid (£):");
-                    amount = this.input.nextInt();
-                    if (amount > 0) break;
+                    amount = this.input.nextBigDecimal();
+                    if (amount.compareTo(new BigDecimal(0)) > 0) break;
                 }
 
                 System.out.println(this.service.bid(auctionId, amount, this.user));

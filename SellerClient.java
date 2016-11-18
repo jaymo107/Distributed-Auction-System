@@ -1,3 +1,4 @@
+import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.Scanner;
@@ -9,13 +10,13 @@ import java.util.Scanner;
  */
 public class SellerClient implements AuctionClient {
 
-    private AuctionService service;
+    private SellerService service;
     private Scanner input;
     private User user;
 
     public SellerClient() throws RemoteException {
         try {
-            this.service = (AuctionService) LocateRegistry.getRegistry(1098).lookup("rmi://localhost/AuctionService");
+            this.service = (SellerService) LocateRegistry.getRegistry(1098).lookup("rmi://localhost/SellerService");
             System.out.println("[AUCTION SELLER SYSTEM]\n\nHello, before we start, please enter the following information...");
             input = new Scanner(System.in);
 
@@ -56,8 +57,8 @@ public class SellerClient implements AuctionClient {
             // List the auctions
             if (currentCommand.equals("2")) {
                 String description;
-                int startingPrice;
-                int reservePrice;
+                BigDecimal startingPrice;
+                BigDecimal reservePrice;
 
                 while (true) {
                     System.out.println("Please enter a short description of the item:");
@@ -66,10 +67,10 @@ public class SellerClient implements AuctionClient {
                 }
 
                 System.out.println("Please enter a start price of this item (£):");
-                startingPrice = this.input.nextInt();
+                startingPrice = this.input.nextBigDecimal();
 
                 System.out.println("Please enter a reserve price (£):");
-                reservePrice = this.input.nextInt();
+                reservePrice = this.input.nextBigDecimal();
 
                 Item item = new Item(startingPrice, reservePrice, description);
 
@@ -80,7 +81,6 @@ public class SellerClient implements AuctionClient {
             if (currentCommand.equals("3")) {
                 System.out.println("Please enter the ID of the auction to close:");
                 int auctionId = this.input.nextInt();
-
                 System.out.println(this.service.closeAuction(auctionId, this.user));
             }
         }
