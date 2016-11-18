@@ -1,3 +1,4 @@
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -12,20 +13,20 @@ public class Auction {
     private User seller;
     private User highestBidder;
     private Date createdAt;
-    private int currentBid;
+    private BigDecimal currentBid;
+    private static int auctionIncrementId = 0;
 
     /**
      * Create an Auction with the item to sell and the seller.
      *
      * @param item        The item within the auction.
      * @param seller      The identifier of the seller.
-     * @param id          The generated ID for this current auction.
      */
-    public Auction(Item item, User seller, int id) {
+    public Auction(Item item, User seller) {
         this.item = item;
         this.seller = seller;
         this.createdAt = new Date();
-        this.id = id;
+        this.id = ++auctionIncrementId;
         this.currentBid = item.getStartingPrice();
         this.highestBidder = new User(null, null);
     }
@@ -37,7 +38,7 @@ public class Auction {
      * @param amount The Amount to bid on the item for.
      * @param user   The user bidding on this item.
      */
-    public synchronized String bid(int amount, User user) {
+    public synchronized String bid(BigDecimal amount, User user) {
 
         // Trying to bid on own item
         if (user.getEmail().equalsIgnoreCase(this.seller.getEmail())) {
@@ -45,7 +46,7 @@ public class Auction {
         }
 
         // Check that the bid is bigger than the current
-        if (amount <= this.currentBid) {
+        if (amount.compareTo(this.currentBid) < 1) {
             return "ERROR: Bid must be higher than current bid.";
         }
 
@@ -78,7 +79,7 @@ public class Auction {
     /**
      * @return int
      */
-    public int getCurrentBid() {
+    public BigDecimal getCurrentBid() {
         return currentBid;
     }
 

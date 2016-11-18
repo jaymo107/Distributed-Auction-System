@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * An object which can be sold within the auction class. Holds
@@ -7,17 +8,17 @@ import java.io.Serializable;
  * @author JamesDavies
  */
 public class Item implements Serializable {
-    private int startingPrice;
+    private BigDecimal startingPrice;
     private String description;
-    private int reservePrice;
+    private BigDecimal reservePrice;
 
-    public Item(int startingPrice, int reservePrice, String description) {
+    public Item(BigDecimal startingPrice, BigDecimal reservePrice, String description) {
         this.startingPrice = startingPrice;
         this.reservePrice = reservePrice;
         this.description = description;
     }
 
-    public int getStartingPrice() {
+    public BigDecimal getStartingPrice() {
         return startingPrice;
     }
 
@@ -25,7 +26,7 @@ public class Item implements Serializable {
         return description;
     }
 
-    public int getReservePrice() {
+    public BigDecimal getReservePrice() {
         return reservePrice;
     }
 }

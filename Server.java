@@ -15,7 +15,12 @@ public class Server {
     public Server() {
         try {
             Registry registry = LocateRegistry.createRegistry(1098);
-            registry.rebind("rmi://localhost/AuctionService", new AuctionServiceImpl());
+
+            AuctionServiceImpl service = new AuctionServiceImpl();
+
+            registry.rebind("rmi://localhost/BuyerService", service);
+            registry.rebind("rmi://localhost/SellerService", service);
+
             System.out.println("Auction server started...");
         }
         catch (Exception e) {

@@ -1,6 +1,9 @@
+import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Handles the bids and auctions from the various clients
@@ -8,7 +11,7 @@ import java.util.HashMap;
  *
  * @author JamesDavies
  */
-public class AuctionServiceImpl extends UnicastRemoteObject implements AuctionService {
+public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerService, SellerService {
 
     private HashMap<Integer, Auction> auctions;
 
@@ -26,8 +29,9 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements AuctionSe
      * @return String     Return the Auction message
      */
     public String createAuction(Item item, User seller) throws RemoteException {
-        int key = auctions.size();
-        auctions.put(key, new Auction(item, seller, key));
+        Auction auction = new Auction(item, seller);
+        int key = auction.getId();
+        auctions.put(key, auction);
         return "Auction created successfully with ID " + key;
     }
 
@@ -37,7 +41,7 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements AuctionSe
      * @param user      The user making the bid.
      * @return int      The success number.
      */
-    public String bid(int auctionId, int amount, User user) throws RemoteException {
+    public String bid(int auctionId, BigDecimal amount, User user) throws RemoteException {
         if (!auctions.containsKey(auctionId)) {
             return "ERROR: There was no item found with that ID, please try again.";
         }
@@ -55,37 +59,27 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements AuctionSe
      * @throws RemoteException
      */
     public String closeAuction(int auctionId, User seller) throws RemoteException {
-        // Check if the auction exists.
-        if (!auctions.containsKey(auctionId)) {
-            return "ERROR: There was no item found with that ID, please try again.";
-        }
 
         // Store the current auction requested.
         Auction auction = this.auctions.get(auctionId);
 
-        // You must be a buyer to bid on this.
-        if (!seller.getEmail().equalsIgnoreCase(auction.getSeller().getEmail())) {
-            return "ERROR: You are not the creator of this auction.";
+        // Check if the auction exists.
+        if (auction == null) {
+            return "ERROR: There was no item found with that ID, please try again.";
         }
 
         // The current bid is below the reserve price.
-        if (auction.getCurrentBid() < auction.getItem().getReservePrice()) {
-            return "ERROR: Reserve price not met.";
-        }
-
-        // There has been no bidder yet.
-        if (auction.getHighestBidder().getEmail().isEmpty()) {
-            return "ERROR: There have been no bids yet.";
+        if (auction.getCurrentBid().compareTo(auction.getItem().getReservePrice()) == -1) {
+            this.auctions.remove(auctionId);
+            return "MESSAGE: Closing auction, reserve price not met.";
         }
 
         // Store the auction winner and highest bid
         User winner = auction.getHighestBidder();
-        int winningBid = auction.getCurrentBid();
+        BigDecimal winningBid = auction.getCurrentBid();
 
-        // Remove this auction from the hashmap
         this.auctions.remove(auctionId);
-
-        return "MESSAGE: Item sold! The winner of this auction was " + winner.getName() + " (" + winner.getEmail() + ") with £" + winningBid;
+        return "MESSAGE: Item sold! The winner of this auction was " + winner.getName() + " (" + winner.getEmail() + ") with £" + winningBid.toString();
     }
 
     /**
@@ -102,11 +96,19 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements AuctionSe
         StringBuilder builder = new StringBuilder();
 
         // Loop over each element in the hashmap and print out the values for each.
-        for (int i = 0; i < this.auctions.size(); i++) {
-            builder.append("Auction ID: [" + this.auctions.get(i).getId() + "]\n");
-            builder.append("Created: " + this.auctions.get(i).getCreatedAt().toString() + "\n");
-            builder.append("Description: " + this.auctions.get(i).getItem().getDescription() + "\n");
-            builder.append("Current Bid: £" + this.auctions.get(i).getCurrentBid() + "\n");
+
+        Iterator it = this.auctions.entrySet().iterator();
+
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            Auction a = this.auctions.get(pair.getKey());
+
+            //if(a == null) continue;
+
+            builder.append("Auction ID: [" + a.getId() + "]\n");
+            builder.append("Created: " + a.getCreatedAt().toString() + "\n");
+            builder.append("Description: " + a.getItem().getDescription() + "\n");
+            builder.append("Current Bid: £" + a.getCurrentBid() + "\n");
             builder.append("-------------------------------------------------------------------\n\n");
         }
 
