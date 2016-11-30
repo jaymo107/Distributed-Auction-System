@@ -1,6 +1,7 @@
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.security.*;
 import java.util.Scanner;
 
 /**
@@ -8,7 +9,7 @@ import java.util.Scanner;
  *
  * @author JamesDavies
  */
-public class BuyerClient implements AuctionClient {
+public class BuyerClient extends AuthenticatedClient implements AuctionClient {
 
     private BuyerService service;
     private Scanner input;
@@ -46,6 +47,9 @@ public class BuyerClient implements AuctionClient {
 
             // Create a new user object to pass to the server.
             this.user = new User(email, name);
+
+            // Generate the keys
+            this.generateKeys();
 
             System.out.println("Thanks " + this.user.getName() + ", You have connected to the auction server!\nPlease type a command to get started:\n1: Browse Auctions\n2: Bid on an Auction\n-------------------------------------------");
             this.getInput();

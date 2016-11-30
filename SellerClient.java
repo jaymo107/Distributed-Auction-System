@@ -8,7 +8,7 @@ import java.util.Scanner;
  *
  * @author JamesDavies
  */
-public class SellerClient implements AuctionClient {
+public class SellerClient extends AuthenticatedClient implements AuctionClient {
 
     private SellerService service;
     private Scanner input;
@@ -32,6 +32,9 @@ public class SellerClient implements AuctionClient {
 
             // Create user object for the seller.
             this.user = new User(email, null);
+
+            // Generate the keys
+            this.generateKeys();
 
             System.out.println("Success! You are connected to the Auction server!\n\n1: List the auctions\n2: Create a new auction\n3: Close an auction\n-------------------------------------------");
             this.getInput();
