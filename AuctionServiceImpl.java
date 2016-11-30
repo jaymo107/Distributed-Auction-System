@@ -1,6 +1,7 @@
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.security.*;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -14,10 +15,22 @@ import java.util.Map;
 public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerService, SellerService {
 
     private HashMap<Integer, Auction> auctions;
+    private PublicKey publicKey;
+    private PrivateKey privateKey;
 
     public AuctionServiceImpl() throws RemoteException {
         super();
         this.auctions = new HashMap<>();
+        
+        // Generate the key pair for use with authentication
+        try {
+            KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+            KeyPair keys = generator.generateKeyPair();
+            this.publicKey = keys.getPublic();
+            this.privateKey = keys.getPrivate();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -102,8 +115,6 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry) it.next();
             Auction a = this.auctions.get(pair.getKey());
-
-            //if(a == null) continue;
 
             builder.append("Auction ID: [" + a.getId() + "]\n");
             builder.append("Created: " + a.getCreatedAt().toString() + "\n");
