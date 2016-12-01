@@ -1,5 +1,6 @@
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * The server class to run and serve the remote object to the
