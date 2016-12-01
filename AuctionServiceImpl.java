@@ -17,11 +17,13 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
     private HashMap<Integer, Auction> auctions;
     private PublicKey publicKey;
     private PrivateKey privateKey;
+    private HashMap<Integer, User> authenticatedUsers;
 
     public AuctionServiceImpl() throws RemoteException {
         super();
         this.auctions = new HashMap<>();
-        
+        this.authenticatedUsers = new HashMap<>();
+
         // Generate the key pair for use with authentication
         try {
             KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
