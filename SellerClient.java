@@ -36,6 +36,12 @@ public class SellerClient extends AuthenticatedClient implements AuctionClient {
             // Generate the keys
             this.generateKeys();
 
+            if (!this.authenticate(this.user, this.service)) {
+                // Authentication failed
+                System.out.println("Sorry, we couldn't seem to authenticate you.");
+                System.exit(0);
+            }
+
             System.out.println("Success! You are connected to the Auction server!\n\n1: List the auctions\n2: Create a new auction\n3: Close an auction\n-------------------------------------------");
             this.getInput();
         } catch (Exception e) {

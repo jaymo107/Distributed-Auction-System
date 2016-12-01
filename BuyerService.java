@@ -9,7 +9,7 @@ import java.rmi.RemoteException;
  *
  * @author JamesDavies
  */
-public interface BuyerService extends Remote {
+public interface BuyerService extends Remote, Service {
 
     /**
      * Place a bid in an auction.
@@ -20,9 +20,5 @@ public interface BuyerService extends Remote {
      */
     String bid(int auctionId, BigDecimal amount, User user) throws RemoteException;
 
-    /**
-     * Print out a list of the current auctions;
-     */
-    String browseAuctions() throws RemoteException;
 
 }

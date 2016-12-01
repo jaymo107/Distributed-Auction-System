@@ -8,7 +8,7 @@ import java.rmi.RemoteException;
  *
  * @author JamesDavies
  */
-public interface SellerService extends Remote {
+public interface SellerService extends Remote, Service {
 
     /**
      * Create a new auction given an item.
@@ -27,9 +27,5 @@ public interface SellerService extends Remote {
      */
     String closeAuction(int auctionId, User user) throws RemoteException;
 
-    /**
-     * Print out a list of the current auctions;
-     */
-    String browseAuctions() throws RemoteException;
 
 }

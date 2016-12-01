@@ -19,6 +19,7 @@ public class BuyerClient extends AuthenticatedClient implements AuctionClient {
      * Locate the remote object in the registry and get the users information.
      */
     public BuyerClient() throws RemoteException {
+
         try {
             this.service = (BuyerService) LocateRegistry.getRegistry(1098).lookup("rmi://localhost/BuyerService");
 
@@ -50,6 +51,12 @@ public class BuyerClient extends AuthenticatedClient implements AuctionClient {
 
             // Generate the keys
             this.generateKeys();
+
+            if (!this.authenticate(this.user, this.service)) {
+                // Authentication failed
+                System.out.println("Sorry, we couldn't seem to authenticate you.");
+                System.exit(0);
+            }
 
             System.out.println("Thanks " + this.user.getName() + ", You have connected to the auction server!\nPlease type a command to get started:\n1: Browse Auctions\n2: Bid on an Auction\n-------------------------------------------");
             this.getInput();
