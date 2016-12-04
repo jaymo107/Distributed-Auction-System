@@ -1,22 +1,77 @@
 import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
-import java.rmi.Remote;
+import java.io.*;
+import java.nio.file.Files;
 import java.security.*;
+import java.security.spec.EncodedKeySpec;
+import java.security.spec.KeySpec;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.RSAPrivateKeySpec;
 
-/**
- * Created by JamesDavies on 30/11/2016.
- */
 public class AuthenticatedClient {
+
+    /**
+     * AUTHENTICATION
+     * [Object with info to send]
+     * 0. Send id and random number to server - plain text
+     * 1. Server encrypts with its private key and sends it back with some data  i.e. IP address and signs it
+     * 2. Client receives and decrypts. Compares number. Returns OK.
+     * 3. Upon OK, server sends Client a random number
+     * 4. Client encrypts and signs data and sends back with extra data i.e. IP address
+     * 5. Server then looks up userID(?) gets key and decrypts. Compares and verifies.
+     */
 
     protected PublicKey publicKey;
     protected PrivateKey privateKey;
+    protected final String publicKeyDir = "./keys/public/";
+    protected final String privateKeyDir = "./keys/private/";
+
+    public KeyPair loadKeys(int userId) {
+
+        String filename = userId + ".key";
+        String privateKeyLocation = this.privateKeyDir + filename;
+        String publicKeyLocation = this.publicKeyDir + filename;
+
+        // Check the file exists
+        if (!new File(privateKeyLocation).exists()) {
+            return null;
+        }
+
+        if (!new File(publicKeyLocation).exists()) {
+            return null;
+        }
+
+        // Read in private key
+        try {
+            FileInputStream fs = new FileInputStream(privateKeyLocation);
+            ObjectInputStream ds = new ObjectInputStream(fs);
+            this.privateKey = (PrivateKey) ds.readObject();
+            fs.close();
+            ds.close();
+
+            System.out.println("[KEYS] Private Key loaded.");
+
+            fs = new FileInputStream(publicKeyLocation);
+            ds = new ObjectInputStream(fs);
+            this.publicKey = (PublicKey) ds.readObject();
+            fs.close();
+            ds.close();
+
+            System.out.println("[KEYS] Public Key loaded.");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return new KeyPair(this.publicKey, this.privateKey);
+    }
 
     /**
      * Generate a key pair if they don't exist already.
      */
-    public void generateKeys() {
+    public void generateKeys(int user) {
         try {
             KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+            generator.initialize(1024, new SecureRandom());
             KeyPair keys = generator.generateKeyPair();
 
             // Only generate keys if they don't already exist
@@ -24,7 +79,20 @@ public class AuthenticatedClient {
 
             this.publicKey = keys.getPublic();
             this.privateKey = keys.getPrivate();
-        } catch (NoSuchAlgorithmException e) {
+
+            FileOutputStream fos = new FileOutputStream("./keys/public/" + user + ".key");
+            fos.write(this.publicKey.getEncoded());
+            fos.close();
+
+            System.out.println("Public key written.");
+
+            fos = new FileOutputStream("./keys/private/" + user + ".key");
+            fos.write(this.privateKey.getEncoded());
+            fos.close();
+
+            System.out.println("Private key written.");
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -78,13 +146,21 @@ public class AuthenticatedClient {
     }
 
     /**
+     * Sign it
+     *
+     * @param service
+     */
+    private void verify(Service service) {
+
+    }
+
+    /**
      * Authenticate the user with the server.
      *
      * @param $user
      * @return
      */
-    public boolean authenticate(User $user, Service service) {
-
+    public boolean authenticate(User user, Service service) {
 
         return false;
     }
