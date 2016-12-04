@@ -1,6 +1,7 @@
 import javax.crypto.Cipher;
 import java.io.*;
 import java.nio.file.Files;
+import java.rmi.RemoteException;
 import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -178,7 +179,9 @@ public class AuthenticatedClient {
      * @param $user
      * @return
      */
-    public boolean authenticate(User user, Service service) {
+    public boolean authenticate(User user, Service service) throws Exception {
+
+        Signature signature = Signature.getInstance("SHA1withRSA");
 
         // Ensure the keys are loaded
         loadKeys(user.getId());
@@ -191,8 +194,17 @@ public class AuthenticatedClient {
         // Step 1: Send a plain text user Auth object to the server.
         Auth authObject = new Auth(user.getId());
 
+        // Step 2: Recieve the sealed and signed object from the server
+        SignedObject obj = service.verifyClient(authObject);
+        Auth returnedObj = (Auth) obj.getObject();
+        System.out.println(returnedObj.getOriginIp());
+
+        if (obj.verify(this.serverPublic, signature)) {
+            System.out.println("Verified the server!");
+        } else {
+            System.out.println("Unable to verify!");
+        }
 
         return false;
     }
-
 }

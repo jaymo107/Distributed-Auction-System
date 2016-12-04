@@ -1,5 +1,6 @@
 import java.rmi.RemoteException;
 import java.security.Signature;
+import java.security.SignedObject;
 
 /**
  * The remote interface of methods and attributes to be used
@@ -18,7 +19,7 @@ public interface Service {
      * @return
      * @throws RemoteException
      */
-    Signature verify(Auth authObject) throws RemoteException;
+    SignedObject verifyClient(Auth authObject) throws RemoteException;
 
     /**
      * Print out a list of the current auctions;
