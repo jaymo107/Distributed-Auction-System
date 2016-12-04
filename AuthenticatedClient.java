@@ -6,6 +6,7 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.*;
 
+
 public class AuthenticatedClient {
 
     /**
@@ -19,12 +20,19 @@ public class AuthenticatedClient {
      * 5. Server then looks up userID(?) gets key and decrypts. Compares and verifies.
      */
 
-    protected PublicKey publicKey;
-    protected PrivateKey privateKey;
-    protected final String publicKeyDir = "./keys/public/";
-    protected final String privateKeyDir = "./keys/private/";
+    private PublicKey publicKey;
+    private PrivateKey privateKey;
+    private PublicKey serverPublic;
+    private final String publicKeyDir = "./keys/public/";
+    private final String privateKeyDir = "./keys/private/";
+    private final String serverPublicKeyDir = "./keys/public/";
 
-    public KeyPair loadKeys(int userId) {
+    /**
+     * Load the keys from the client and server.
+     *
+     * @param userId
+     */
+    private void loadKeys(int userId) {
 
         String filename = userId + ".key";
         String privateKeyLocation = this.privateKeyDir + filename;
@@ -32,43 +40,51 @@ public class AuthenticatedClient {
 
         // Check the file exists
         if (!new File(privateKeyLocation).exists()) {
-            return null;
+            return;
         }
 
         if (!new File(publicKeyLocation).exists()) {
-            return null;
+            return;
         }
 
-        // Read in private key
         try {
+            // Read in private key
             FileInputStream fs = new FileInputStream(new File(privateKeyLocation));
             ObjectInputStream ds = new ObjectInputStream(fs);
             byte[] prKey = (byte[]) ds.readObject();
             fs.close();
             ds.close();
-
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             KeySpec ks = new PKCS8EncodedKeySpec(prKey);
             this.privateKey = (RSAPrivateKey) keyFactory.generatePrivate(ks);
 
+            // Load in public key
             fs = new FileInputStream(new File(publicKeyLocation));
             ds = new ObjectInputStream(fs);
             byte[] puKey = (byte[]) ds.readObject();
             fs.close();
             ds.close();
-
             ks = new X509EncodedKeySpec(puKey);
             this.publicKey = (RSAPublicKey) keyFactory.generatePublic(ks);
+
+            // Load in server public key
+            fs = new FileInputStream(new File(serverPublicKeyDir));
+            ds = new ObjectInputStream(fs);
+            byte[] serverPublic = (byte[]) ds.readObject();
+            fs.close();
+            ds.close();
+            ks = new X509EncodedKeySpec(serverPublic);
+            this.serverPublic = (RSAPublicKey) keyFactory.generatePublic(ks);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return new KeyPair(this.publicKey, this.privateKey);
     }
 
     /**
-     * Generate a key pair if they don't exist already.
+     * Generate the Key pair to be used with authentication.
+     *
+     * @param user
      */
     public void generateKeys(int user) {
         try {
@@ -106,7 +122,7 @@ public class AuthenticatedClient {
      * @param publicKey
      * @return
      */
-    public byte[] encrypt(String string, PublicKey publicKey) {
+    private byte[] encrypt(String string, PublicKey publicKey) {
         byte[] encrypted = null;
 
         try {
@@ -130,7 +146,7 @@ public class AuthenticatedClient {
      * @param privateKey
      * @return
      */
-    public String decrypt(byte[] encrypted, PrivateKey privateKey) {
+    private String decrypt(byte[] encrypted, PrivateKey privateKey) {
         byte[] decrypted = null;
 
         try {
@@ -164,7 +180,17 @@ public class AuthenticatedClient {
      */
     public boolean authenticate(User user, Service service) {
 
-        System.out.println(this.loadKeys(user.getId()).getPrivate().toString());
+        // Ensure the keys are loaded
+        loadKeys(user.getId());
+
+        // Ensure all of the keys exist.
+        if (this.privateKey == null || this.serverPublic == null || this.publicKey == null) {
+            return false;
+        }
+
+        // Step 1: Send a plain text user Auth object to the server.
+        Auth authObject = new Auth(user.getId());
+
 
         return false;
     }
