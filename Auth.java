@@ -9,11 +9,13 @@ public class Auth implements Serializable {
 
     private String random;
     private int userId;
+    private String originIp;
 
     public Auth(int userId) {
         this.userId = userId;
         // Generate the random int to be used as the test.
         this.random = String.valueOf(new Random().nextInt());
+        this.originIp = null;
     }
 
     /**
@@ -53,5 +55,22 @@ public class Auth implements Serializable {
      */
     public String appendValue(String value) {
         return this.random.concat(value);
+    }
+
+    /**
+     * Set the IP address of the origin.
+     */
+    public String setOriginIp(String ip) {
+        this.originIp = ip;
+        return this.originIp;
+    }
+
+    /**
+     * Return the IP Address
+     *
+     * @return
+     */
+    public String getOriginIp() {
+        return this.originIp;
     }
 }
