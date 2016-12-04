@@ -1,3 +1,4 @@
+import javax.crypto.Cipher;
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -65,7 +66,7 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
     }
 
     /**
-     * Remove the auction from the hashmap and verify the constraints
+     * Remove the auction from the hash map and verify the constraints
      * pass such as reserve price etc.
      *
      * @param auctionId The ID of the auction to close.
@@ -94,7 +95,7 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
         BigDecimal winningBid = auction.getCurrentBid();
 
         this.auctions.remove(auctionId);
-        return "MESSAGE: Item sold! The winner of this auction was " + winner.getName() + " (" + winner.getEmail() + ") with £" + winningBid.toString();
+        return "MESSAGE: Item sold! The winner of this auction was " + winner.getId() + " with £" + winningBid.toString();
     }
 
     /**
@@ -126,5 +127,25 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
         }
 
         return builder.toString();
+    }
+
+    public Signature verify(String randomValue) {
+        // Encrypt the message
+        byte[] bytes = randomValue.getBytes();
+        Signature signature = null;
+        try {
+
+            signature = Signature.getInstance("SHA1withRSA");
+            signature.initSign(this.privateKey, new SecureRandom());
+
+
+            return signature;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // Sign it
+        return signature;
+        // Send it back to the client
     }
 }

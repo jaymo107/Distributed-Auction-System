@@ -5,6 +5,7 @@ import java.security.NoSuchAlgorithmException;
 /**
  * The server class to run and serve the remote object to the
  * client.
+ *
  * @author JamesDavies
  */
 public class Server {
@@ -23,8 +24,7 @@ public class Server {
             registry.rebind("rmi://localhost/SellerService", service);
 
             System.out.println("Auction server started...");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("Server Error: " + e);
         }
     }

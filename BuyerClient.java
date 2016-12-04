@@ -27,30 +27,18 @@ public class BuyerClient extends AuthenticatedClient implements AuctionClient {
             input = new Scanner(System.in);
             System.out.println("[AUCTION BUYER SYSTEM]\n\nHello, before we start, please enter the following information...");
 
-            String email;
-            String name;
+            int id;
 
             // Check the email is valid.
             while (true) {
-                System.out.println("Enter email:");
-                email = this.input.nextLine();
+                System.out.println("Enter user ID:");
+                id = this.input.nextInt();
 
-                if (email.indexOf("@") > 0) break;
-            }
-
-            // Get the name of the user.
-            while (true) {
-                System.out.println("Enter name:");
-                name = this.input.nextLine();
-
-                if (name.length() > 0) break;
+                if (id > 0) break;
             }
 
             // Create a new user object to pass to the server.
-            this.user = new User(email, name);
-
-            // Generate the keys
-            this.generateKeys();
+            this.user = new User(id);
 
             if (!this.authenticate(this.user, this.service)) {
                 // Authentication failed
@@ -58,7 +46,7 @@ public class BuyerClient extends AuthenticatedClient implements AuctionClient {
                 System.exit(0);
             }
 
-            System.out.println("Thanks " + this.user.getName() + ", You have connected to the auction server!\nPlease type a command to get started:\n1: Browse Auctions\n2: Bid on an Auction\n-------------------------------------------");
+            System.out.println("Thanks, You have connected to the auction server!\nPlease type a command to get started:\n1: Browse Auctions\n2: Bid on an Auction\n-------------------------------------------");
             this.getInput();
         } catch (Exception e) {
             e.printStackTrace();

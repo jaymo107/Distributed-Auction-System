@@ -19,8 +19,8 @@ public class Auction {
     /**
      * Create an Auction with the item to sell and the seller.
      *
-     * @param item        The item within the auction.
-     * @param seller      The identifier of the seller.
+     * @param item   The item within the auction.
+     * @param seller The identifier of the seller.
      */
     public Auction(Item item, User seller) {
         this.item = item;
@@ -28,7 +28,7 @@ public class Auction {
         this.createdAt = new Date();
         this.id = ++auctionIncrementId;
         this.currentBid = item.getStartingPrice();
-        this.highestBidder = new User(null, null);
+        this.highestBidder = new User(0);
     }
 
     /**
@@ -41,7 +41,7 @@ public class Auction {
     public synchronized String bid(BigDecimal amount, User user) {
 
         // Trying to bid on own item
-        if (user.getEmail().equalsIgnoreCase(this.seller.getEmail())) {
+        if (user.getId() == this.seller.getId()) {
             return "ERROR: You are trying to bid on your own auction.";
         }
 

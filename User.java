@@ -4,19 +4,13 @@ import java.io.Serializable;
  * RMI server.
  */
 public class User implements Serializable{
-    private String email;
-    private String name;
+    private int id;
 
-    public User(String email, String name) {
-        this.email = email;
-        this.name = name;
+    public User(int id) {
+        this.id = id;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public String getName() {
-        return name;
+    public int getId() {
+        return id;
     }
 }

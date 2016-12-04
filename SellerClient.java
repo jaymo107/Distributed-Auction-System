@@ -20,21 +20,18 @@ public class SellerClient extends AuthenticatedClient implements AuctionClient {
             System.out.println("[AUCTION SELLER SYSTEM]\n\nHello, before we start, please enter the following information...");
             input = new Scanner(System.in);
 
-            String email;
+            int id;
 
             // Get the email from the input, keep checking if not valid.
             while (true) {
-                System.out.println("Enter email:");
-                email = this.input.nextLine();
+                System.out.println("Enter ID:");
+                id = this.input.nextInt();
 
-                if (email.indexOf("@") > 0) break;
+                if (id > 0) break;
             }
 
             // Create user object for the seller.
-            this.user = new User(email, null);
-
-            // Generate the keys
-            this.generateKeys();
+            this.user = new User(id);
 
             if (!this.authenticate(this.user, this.service)) {
                 // Authentication failed
