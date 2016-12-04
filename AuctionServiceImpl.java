@@ -129,15 +129,19 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
         return builder.toString();
     }
 
-    public Signature verify(String randomValue) {
+    /**
+     * Recieves the Auth object, encrypts it, signs it and returns it.
+     * @param authObject
+     * @return
+     */
+    public Signature verify(Auth authObject) {
         // Encrypt the message
-        byte[] bytes = randomValue.getBytes();
+        byte[] bytes = authObject.getValue().getBytes();
         Signature signature = null;
         try {
 
             signature = Signature.getInstance("SHA1withRSA");
             signature.initSign(this.privateKey, new SecureRandom());
-
 
             return signature;
 
