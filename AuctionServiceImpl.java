@@ -1,9 +1,13 @@
 import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SealedObject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.ObjectInputStream;
 import java.math.BigDecimal;
+import java.net.Inet4Address;
+import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.*;
@@ -75,7 +79,7 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
     }
 
     /**
-     * Remove the auction from the hash map and verify the constraints
+     * Remove the auction from the hash map and verifyClient the constraints
      * pass such as reserve price etc.
      *
      * @param auctionId The ID of the auction to close.
@@ -144,23 +148,28 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
      * @param authObject
      * @return
      */
-    public Signature verify(Auth authObject) {
-        // Encrypt the message
-        byte[] bytes = authObject.getValue().getBytes();
+    public SignedObject verifyClient(Auth authObject) {
+
+        Auth auth = authObject;
+        SealedObject returnObj;
+
+        auth.setOriginIp(this.getFormattedIPAddress());
+
         Signature signature = null;
+        SignedObject obj = null;
+
         try {
-
+            byte[] bytes = auth.getValue().getBytes();
             signature = Signature.getInstance("SHA1withRSA");
-            signature.initSign(this.privateKey, new SecureRandom());
+            obj = new SignedObject(auth, this.privateKey, signature);
 
-            return signature;
+            return obj;
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // Sign it
-        return signature;
-        // Send it back to the client
+
+        return obj;
     }
 
     /**
@@ -207,6 +216,23 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Get the formatted IP address to append to the payload
+     * of the auth object.
+     *
+     * @return
+     */
+    private String getFormattedIPAddress() {
+
+        try {
+            return Inet4Address.getLocalHost().toString();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
 }
