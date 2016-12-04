@@ -23,9 +23,9 @@ public class AuthenticatedClient {
     private PublicKey publicKey;
     private PrivateKey privateKey;
     private PublicKey serverPublic;
-    private final String publicKeyDir = "./keys/public/";
-    private final String privateKeyDir = "./keys/private/";
-    private final String serverPublicKeyDir = "./keys/public/";
+    private final String keyDir = "./keys/";
+    private final String publicKeyDir = keyDir + "public/";
+    private final String privateKeyDir = keyDir + "private/";
 
     /**
      * Load the keys from the client and server.
@@ -68,7 +68,7 @@ public class AuthenticatedClient {
             this.publicKey = (RSAPublicKey) keyFactory.generatePublic(ks);
 
             // Load in server public key
-            fs = new FileInputStream(new File(serverPublicKeyDir));
+            fs = new FileInputStream(new File(publicKeyDir + "server.key"));
             ds = new ObjectInputStream(fs);
             byte[] serverPublic = (byte[]) ds.readObject();
             fs.close();

@@ -1,8 +1,17 @@
 import javax.crypto.Cipher;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.ObjectInputStream;
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.*;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.KeySpec;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -131,6 +140,7 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
 
     /**
      * Recieves the Auth object, encrypts it, signs it and returns it.
+     *
      * @param authObject
      * @return
      */
@@ -152,4 +162,51 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
         return signature;
         // Send it back to the client
     }
+
+    /**
+     * Load the public key of either a user or the server.
+     *
+     * @param user
+     * @return
+     */
+    private PublicKey loadPublicKey(User user) {
+        RSAPublicKey pk = null;
+        String location = (user == null) ? "server" : String.valueOf(user.getId());
+
+        try {
+            FileInputStream fs = new FileInputStream(new File("./keys/public/" + location + ".key"));
+            ObjectInputStream ds = new ObjectInputStream(fs);
+            byte[] puKey = (byte[]) ds.readObject();
+            fs.close();
+            ds.close();
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            KeySpec ks = new X509EncodedKeySpec(puKey);
+            pk = (RSAPublicKey) keyFactory.generatePublic(ks);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return pk;
+    }
+
+    /**
+     * Load the servers public and private key.
+     */
+    private void loadServerKeys() {
+        try {
+            FileInputStream fs = new FileInputStream(new File("./keys/private/server.key"));
+            ObjectInputStream ds = new ObjectInputStream(fs);
+            byte[] prKey = (byte[]) ds.readObject();
+            fs.close();
+            ds.close();
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            KeySpec ks = new PKCS8EncodedKeySpec(prKey);
+            this.privateKey = (RSAPrivateKey) keyFactory.generatePrivate(ks);
+            this.publicKey = loadPublicKey(null);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
