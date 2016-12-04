@@ -2,10 +2,9 @@ import javax.crypto.Cipher;
 import java.io.*;
 import java.nio.file.Files;
 import java.security.*;
-import java.security.spec.EncodedKeySpec;
-import java.security.spec.KeySpec;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.RSAPrivateKeySpec;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.*;
 
 public class AuthenticatedClient {
 
@@ -42,21 +41,24 @@ public class AuthenticatedClient {
 
         // Read in private key
         try {
-            FileInputStream fs = new FileInputStream(privateKeyLocation);
+            FileInputStream fs = new FileInputStream(new File(privateKeyLocation));
             ObjectInputStream ds = new ObjectInputStream(fs);
-            this.privateKey = (PrivateKey) ds.readObject();
+            byte[] prKey = (byte[]) ds.readObject();
             fs.close();
             ds.close();
 
-            System.out.println("[KEYS] Private Key loaded.");
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            KeySpec ks = new PKCS8EncodedKeySpec(prKey);
+            this.privateKey = (RSAPrivateKey) keyFactory.generatePrivate(ks);
 
-            fs = new FileInputStream(publicKeyLocation);
+            fs = new FileInputStream(new File(publicKeyLocation));
             ds = new ObjectInputStream(fs);
-            this.publicKey = (PublicKey) ds.readObject();
+            byte[] puKey = (byte[]) ds.readObject();
             fs.close();
             ds.close();
 
-            System.out.println("[KEYS] Public Key loaded.");
+            ks = new X509EncodedKeySpec(puKey);
+            this.publicKey = (RSAPublicKey) keyFactory.generatePublic(ks);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -80,14 +82,14 @@ public class AuthenticatedClient {
             this.publicKey = keys.getPublic();
             this.privateKey = keys.getPrivate();
 
-            FileOutputStream fos = new FileOutputStream("./keys/public/" + user + ".key");
-            fos.write(this.publicKey.getEncoded());
+            ObjectOutputStream fos = new ObjectOutputStream(new FileOutputStream("./keys/public/" + user + ".key"));
+            fos.writeObject(this.publicKey.getEncoded());
             fos.close();
 
             System.out.println("Public key written.");
 
-            fos = new FileOutputStream("./keys/private/" + user + ".key");
-            fos.write(this.privateKey.getEncoded());
+            fos = new ObjectOutputStream(new FileOutputStream("./keys/private/" + user + ".key"));
+            fos.writeObject(this.privateKey.getEncoded());
             fos.close();
 
             System.out.println("Private key written.");
@@ -161,6 +163,8 @@ public class AuthenticatedClient {
      * @return
      */
     public boolean authenticate(User user, Service service) {
+
+        System.out.println(this.loadKeys(user.getId()).getPrivate().toString());
 
         return false;
     }
