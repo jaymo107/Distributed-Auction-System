@@ -14,11 +14,11 @@ public interface Service {
      * Recieve a random value sent by client and return encrypted version with
      * servers private key.
      *
-     * @param randomValue
+     * @param authObject
      * @return
      * @throws RemoteException
      */
-    Signature verify(String randomValue) throws RemoteException;
+    Signature verify(Auth authObject) throws RemoteException;
 
     /**
      * Print out a list of the current auctions;
