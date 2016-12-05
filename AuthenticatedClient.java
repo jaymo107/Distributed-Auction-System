@@ -1,10 +1,13 @@
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
+
 import javax.crypto.Cipher;
+import javax.crypto.SealedObject;
 import java.io.*;
 import java.nio.file.Files;
 import java.rmi.RemoteException;
 import java.security.*;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
+import java.security.interfaces.DSAPrivateKey;
+import java.security.interfaces.DSAPublicKey;
 import java.security.spec.*;
 
 
@@ -55,9 +58,9 @@ public class AuthenticatedClient {
             byte[] prKey = (byte[]) ds.readObject();
             fs.close();
             ds.close();
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            KeyFactory keyFactory = KeyFactory.getInstance("DSA");
             KeySpec ks = new PKCS8EncodedKeySpec(prKey);
-            this.privateKey = (RSAPrivateKey) keyFactory.generatePrivate(ks);
+            this.privateKey = (DSAPrivateKey) keyFactory.generatePrivate(ks);
 
             // Load in public key
             fs = new FileInputStream(new File(publicKeyLocation));
@@ -66,7 +69,7 @@ public class AuthenticatedClient {
             fs.close();
             ds.close();
             ks = new X509EncodedKeySpec(puKey);
-            this.publicKey = (RSAPublicKey) keyFactory.generatePublic(ks);
+            this.publicKey = (DSAPublicKey) keyFactory.generatePublic(ks);
 
             // Load in server public key
             fs = new FileInputStream(new File(publicKeyDir + "server.key"));
@@ -75,7 +78,17 @@ public class AuthenticatedClient {
             fs.close();
             ds.close();
             ks = new X509EncodedKeySpec(serverPublic);
-            this.serverPublic = (RSAPublicKey) keyFactory.generatePublic(ks);
+            this.serverPublic = (DSAPublicKey) keyFactory.generatePublic(ks);
+
+            FileInputStream input = new FileInputStream(new File("./keys/public/server.key"));
+            ObjectInputStream ois = new ObjectInputStream(input);
+            byte[] svrPub = (byte[]) ois.readObject();
+            input.close();
+            ois.close();
+            KeyFactory keys = KeyFactory.getInstance("DSA");
+            KeySpec spec = new X509EncodedKeySpec(svrPub);
+
+            this.serverPublic = (DSAPublicKey) keyFactory.generatePublic(ks);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -89,7 +102,7 @@ public class AuthenticatedClient {
      */
     public void generateKeys(int user) {
         try {
-            KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+            KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
             generator.initialize(1024, new SecureRandom());
             KeyPair keys = generator.generateKeyPair();
 
@@ -179,9 +192,9 @@ public class AuthenticatedClient {
      * @param $user
      * @return
      */
-    public boolean authenticate(User user, Service service) throws Exception {
+    public synchronized boolean authenticate(User user, Service service) throws Exception {
 
-        Signature signature = Signature.getInstance("SHA1withRSA");
+        Signature signature = Signature.getInstance("DSA");
 
         // Ensure the keys are loaded
         loadKeys(user.getId());
@@ -196,14 +209,17 @@ public class AuthenticatedClient {
 
         // Step 2: Recieve the sealed and signed object from the server
         SignedObject obj = service.verifyClient(authObject);
-        Auth returnedObj = (Auth) obj.getObject();
-        System.out.println(returnedObj.getOriginIp());
 
         if (obj.verify(this.serverPublic, signature)) {
-            System.out.println("Verified the server!");
+            System.out.println("Server verified!");
         } else {
-            System.out.println("Unable to verify!");
+            System.out.println("Couldn't verify the server...");
         }
+
+//        Cipher decrypt = Cipher.getInstance("SHA1withRSA");
+//        decrypt.init(Cipher.DECRYPT_MODE, this.serverPublic);
+//        String value = Base64.encode(decrypt.doFinal(Base64.decode(obj.getValue())));
+
 
         return false;
     }
