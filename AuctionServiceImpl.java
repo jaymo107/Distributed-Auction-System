@@ -193,6 +193,27 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
     }
 
     /**
+     * Create a basic auth object which will be signed by the client and
+     * returned to the server for verification.
+     *
+     * @param auth
+     * @return
+     * @throws RemoteException
+     */
+    public Auth createClientAuth(Auth auth) throws RemoteException {
+        Auth returnObj = auth;
+        try {
+            returnObj.setValue(String.valueOf(new Random().nextInt(100)));
+            returnObj.setOriginIp(Inet4Address.getLocalHost().toString());
+            return returnObj;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    /**
      * Load the public key of either a user or the server.
      *
      * @param user

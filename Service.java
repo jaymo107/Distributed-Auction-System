@@ -13,7 +13,7 @@ import java.security.SignedObject;
 public interface Service {
 
     /**
-     * Verify the server by recieving a random value sent by client and return encrypted version with
+     * Verify the server by receiving a random value sent by client and return encrypted version with
      * servers private key.
      *
      * @param authObject
@@ -31,6 +31,15 @@ public interface Service {
      * @throws RemoteException
      */
     boolean verifyClient(SignedObject signedObject) throws RemoteException;
+
+    /**
+     * Create the auth object for the client to encrypt.
+     *
+     * @param authObject
+     * @return
+     * @throws RemoteException
+     */
+    Auth createClientAuth(Auth authObject) throws RemoteException;
 
     /**
      * Print out a list of the current auctions;

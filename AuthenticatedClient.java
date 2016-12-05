@@ -185,8 +185,11 @@ public class AuthenticatedClient {
 
         System.out.println("[AUTH] Server verified!");
 
-        // Step 3: Get the signed object to send to the server.
-        SignedObject signedObject = this.sign(authObject);
+        // Step 3: Server sends challenge to the client
+        Auth serverAuth = service.createClientAuth(authObject);
+
+        // Step 4: Sign the challenge and return to server
+        SignedObject signedObject = this.sign(serverAuth);
 
         return !!(service.verifyClient(signedObject));
     }
