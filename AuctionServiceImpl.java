@@ -1,9 +1,6 @@
-import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SealedObject;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.ObjectInputStream;
 import java.math.BigDecimal;
 import java.net.Inet4Address;
@@ -11,8 +8,8 @@ import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.*;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
+import java.security.interfaces.DSAPrivateKey;
+import java.security.interfaces.DSAPublicKey;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -37,16 +34,7 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
         super();
         this.auctions = new HashMap<>();
         this.authenticatedUsers = new HashMap<>();
-
-        // Generate the key pair for use with authentication
-        try {
-            KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-            KeyPair keys = generator.generateKeyPair();
-            this.publicKey = keys.getPublic();
-            this.privateKey = keys.getPrivate();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
+        this.loadServerKeys();
     }
 
     /**
@@ -151,17 +139,32 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
     public SignedObject verifyClient(Auth authObject) {
 
         Auth auth = authObject;
-        SealedObject returnObj;
+        String randomValue = authObject.getValue();
 
         auth.setOriginIp(this.getFormattedIPAddress());
-
         Signature signature = null;
         SignedObject obj = null;
 
         try {
+            /**
+             * SignedObject method
+             */
             byte[] bytes = auth.getValue().getBytes();
-            signature = Signature.getInstance("SHA1withRSA");
+
+            signature = Signature.getInstance("DSA");
+            //signature.initSign(this.privateKey);
             obj = new SignedObject(auth, this.privateKey, signature);
+
+            System.out.println(obj.verify(this.publicKey, signature));
+//           signature.sign();
+
+            /**
+             * SealedObject
+             */
+            //Cipher cipher = Cipher.getInstance("SHA1withDSA", "SUN");
+//            cipher.init(Cipher.ENCRYPT_MODE, this.privateKey);
+//            byte[] encrypted = cipher.doFinal(randomValue.getBytes());
+//            auth.setValue(Base64.encode(encrypted));
 
             return obj;
 
@@ -179,7 +182,7 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
      * @return
      */
     private PublicKey loadPublicKey(User user) {
-        RSAPublicKey pk = null;
+        DSAPublicKey pk = null;
         String location = (user == null) ? "server" : String.valueOf(user.getId());
 
         try {
@@ -188,9 +191,9 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
             byte[] puKey = (byte[]) ds.readObject();
             fs.close();
             ds.close();
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            KeyFactory keyFactory = KeyFactory.getInstance("DSA");
             KeySpec ks = new X509EncodedKeySpec(puKey);
-            pk = (RSAPublicKey) keyFactory.generatePublic(ks);
+            pk = (DSAPublicKey) keyFactory.generatePublic(ks);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -208,9 +211,9 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
             byte[] prKey = (byte[]) ds.readObject();
             fs.close();
             ds.close();
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            KeyFactory keyFactory = KeyFactory.getInstance("DSA");
             KeySpec ks = new PKCS8EncodedKeySpec(prKey);
-            this.privateKey = (RSAPrivateKey) keyFactory.generatePrivate(ks);
+            this.privateKey = (DSAPrivateKey) keyFactory.generatePrivate(ks);
             this.publicKey = loadPublicKey(null);
 
         } catch (Exception e) {
