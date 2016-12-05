@@ -130,63 +130,6 @@ public class AuthenticatedClient {
     }
 
     /**
-     * Encrypt using our public key.
-     *
-     * @param string
-     * @param publicKey
-     * @return
-     */
-    private byte[] encrypt(String string, PublicKey publicKey) {
-        byte[] encrypted = null;
-
-        try {
-            // Use RSA encryption
-            Cipher cipher = Cipher.getInstance("RSA");
-
-            // Set the cipher to encrypt mode, and use our public key
-            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-            encrypted = cipher.doFinal(string.getBytes());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return encrypted;
-    }
-
-    /**
-     * Decrypt using our private key.
-     *
-     * @param encrypted
-     * @param privateKey
-     * @return
-     */
-    private String decrypt(byte[] encrypted, PrivateKey privateKey) {
-        byte[] decrypted = null;
-
-        try {
-            // Use RSA encryption
-            Cipher cipher = Cipher.getInstance("RSA");
-
-            // Set the cipher to decrypt mode, and use our private key
-            cipher.init(Cipher.DECRYPT_MODE, privateKey);
-            decrypted = cipher.doFinal(encrypted);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return decrypted.toString();
-    }
-
-    /**
-     * Sign it
-     *
-     * @param service
-     */
-    private void verify(Service service) {
-
-    }
-
-    /**
      * Authenticate the user with the server.
      *
      * @param $user
@@ -210,10 +153,9 @@ public class AuthenticatedClient {
         // Step 2: Recieve the sealed and signed object from the server
         SignedObject obj = service.verifyClient(authObject);
 
-        if (obj.verify(this.serverPublic, signature)) {
-            System.out.println("Server verified!");
-        } else {
-            System.out.println("Couldn't verify the server...");
+        // If couldn't verify the server then return.
+        if (!obj.verify(this.serverPublic, signature)) {
+            return false;
         }
 
 //        Cipher decrypt = Cipher.getInstance("SHA1withRSA");
