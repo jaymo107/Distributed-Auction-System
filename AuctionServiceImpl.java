@@ -1,6 +1,7 @@
 import javax.crypto.SealedObject;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.math.BigDecimal;
 import java.net.Inet4Address;
@@ -13,9 +14,7 @@ import java.security.interfaces.DSAPublicKey;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Handles the bids and auctions from the various clients
@@ -28,13 +27,20 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
     private HashMap<Integer, Auction> auctions;
     private PublicKey publicKey;
     private PrivateKey privateKey;
-    private HashMap<Integer, User> authenticatedUsers;
+    private ArrayList<Integer> authenticatedUsers;
+    private Signature signature;
 
     public AuctionServiceImpl() throws RemoteException {
         super();
         this.auctions = new HashMap<>();
-        this.authenticatedUsers = new HashMap<>();
+        this.authenticatedUsers = new ArrayList<>();
         this.loadServerKeys();
+
+        try {
+            this.signature = Signature.getInstance("DSA");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -67,7 +73,7 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
     }
 
     /**
-     * Remove the auction from the hash map and verifyClient the constraints
+     * Remove the auction from the hash map and verify the constraints
      * pass such as reserve price etc.
      *
      * @param auctionId The ID of the auction to close.
@@ -136,35 +142,14 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
      * @param authObject
      * @return
      */
-    public SignedObject verifyClient(Auth authObject) {
+    public synchronized SignedObject verify(Auth authObject) throws RemoteException {
 
-        Auth auth = authObject;
-        String randomValue = authObject.getValue();
-
-        auth.setOriginIp(this.getFormattedIPAddress());
-        Signature signature = null;
         SignedObject obj = null;
 
         try {
-            /**
-             * SignedObject method
-             */
-            byte[] bytes = auth.getValue().getBytes();
 
-            signature = Signature.getInstance("DSA");
-            //signature.initSign(this.privateKey);
-            obj = new SignedObject(auth, this.privateKey, signature);
-
-            System.out.println(obj.verify(this.publicKey, signature));
-//           signature.sign();
-
-            /**
-             * SealedObject
-             */
-            //Cipher cipher = Cipher.getInstance("SHA1withDSA", "SUN");
-//            cipher.init(Cipher.ENCRYPT_MODE, this.privateKey);
-//            byte[] encrypted = cipher.doFinal(randomValue.getBytes());
-//            auth.setValue(Base64.encode(encrypted));
+            authObject.setOriginIp(Inet4Address.getLocalHost().toString());
+            obj = new SignedObject(authObject, this.privateKey, this.signature);
 
             return obj;
 
@@ -176,14 +161,46 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
     }
 
     /**
+     * Verify the client object's signature, store client in
+     * the authenticated clients list for future use.
+     *
+     * @param authObject
+     */
+    public synchronized boolean verifyClient(SignedObject signedObject) throws RemoteException {
+
+        try {
+            // Get the public key of the client
+            Auth auth = (Auth) signedObject.getObject();
+
+            // Get the public key for this user
+            PublicKey key = loadPublicKey(auth.getUserId());
+
+            if (signedObject.verify(key, this.signature)) {
+
+                // Add to list of authenticated users
+                this.authenticatedUsers.add(auth.getUserId());
+
+                System.out.println("[AUTH] User #" + auth.getUserId() + " has been authenticated!");
+
+                return true;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    /**
      * Load the public key of either a user or the server.
      *
      * @param user
      * @return
      */
-    private PublicKey loadPublicKey(User user) {
+    private PublicKey loadPublicKey(int user) {
         DSAPublicKey pk = null;
-        String location = (user == null) ? "server" : String.valueOf(user.getId());
+        String location = (user <= 0) ? "server" : String.valueOf(user);
 
         try {
             FileInputStream fs = new FileInputStream(new File("./keys/public/" + location + ".key"));
@@ -214,28 +231,11 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
             KeyFactory keyFactory = KeyFactory.getInstance("DSA");
             KeySpec ks = new PKCS8EncodedKeySpec(prKey);
             this.privateKey = (DSAPrivateKey) keyFactory.generatePrivate(ks);
-            this.publicKey = loadPublicKey(null);
+            this.publicKey = loadPublicKey(0);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Get the formatted IP address to append to the payload
-     * of the auth object.
-     *
-     * @return
-     */
-    private String getFormattedIPAddress() {
-
-        try {
-            return Inet4Address.getLocalHost().toString();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-
-        return null;
     }
 
 }

@@ -1,3 +1,4 @@
+import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.security.Signature;
 import java.security.SignedObject;
@@ -12,14 +13,24 @@ import java.security.SignedObject;
 public interface Service {
 
     /**
-     * Recieve a random value sent by client and return encrypted version with
+     * Verify the server by recieving a random value sent by client and return encrypted version with
      * servers private key.
      *
      * @param authObject
-     * @return
+     * @return SignedObject
      * @throws RemoteException
      */
-    SignedObject verifyClient(Auth authObject) throws RemoteException;
+    SignedObject verify(Auth authObject) throws RemoteException, UnknownHostException;
+
+    /**
+     * Verify the clients authenticity by decrypting the clients object
+     * using it's public key.
+     *
+     * @param signedObject
+     * @return boolean
+     * @throws RemoteException
+     */
+    boolean verifyClient(SignedObject signedObject) throws RemoteException;
 
     /**
      * Print out a list of the current auctions;

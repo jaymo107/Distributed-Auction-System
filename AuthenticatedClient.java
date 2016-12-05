@@ -1,14 +1,12 @@
-import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
-
-import javax.crypto.Cipher;
-import javax.crypto.SealedObject;
 import java.io.*;
-import java.nio.file.Files;
-import java.rmi.RemoteException;
+import java.net.Inet4Address;
+import java.net.UnknownHostException;
 import java.security.*;
 import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
 import java.security.spec.*;
+import java.util.Random;
+import java.util.Random.*;
 
 
 public class AuthenticatedClient {
@@ -30,6 +28,7 @@ public class AuthenticatedClient {
     private final String keyDir = "./keys/";
     private final String publicKeyDir = keyDir + "public/";
     private final String privateKeyDir = keyDir + "private/";
+    private Signature signature;
 
     /**
      * Load the keys from the client and server.
@@ -130,6 +129,30 @@ public class AuthenticatedClient {
     }
 
     /**
+     * Sign the object using my private key.
+     *
+     * @param authObject
+     * @return
+     * @throws Exception
+     */
+    private SignedObject sign(Auth authObject) throws Exception {
+        SignedObject obj = null;
+
+        try {
+            authObject.setOriginIp(Inet4Address.getLocalHost().toString());
+            authObject.setValue(String.valueOf(new Random().nextInt(100)));
+            obj = new SignedObject(authObject, this.privateKey, this.signature);
+
+            return obj;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return obj;
+    }
+
+    /**
      * Authenticate the user with the server.
      *
      * @param $user
@@ -137,7 +160,7 @@ public class AuthenticatedClient {
      */
     public synchronized boolean authenticate(User user, Service service) throws Exception {
 
-        Signature signature = Signature.getInstance("DSA");
+        this.signature = Signature.getInstance("DSA");
 
         // Ensure the keys are loaded
         loadKeys(user.getId());
@@ -147,22 +170,24 @@ public class AuthenticatedClient {
             return false;
         }
 
-        // Step 1: Send a plain text user Auth object to the server.
+        // Step 1: Send a plain user Auth object to the server.
         Auth authObject = new Auth(user.getId());
 
         // Step 2: Recieve the sealed and signed object from the server
-        SignedObject obj = service.verifyClient(authObject);
+        SignedObject obj = service.verify(authObject);
+        authObject = (Auth) obj.getObject();
 
-        // If couldn't verify the server then return.
-        if (!obj.verify(this.serverPublic, signature)) {
+        // If couldn't verify the server or the values don't match then return.
+        if (!obj.verify(this.serverPublic, signature) ||
+                !authObject.getValue().equals(authObject.getValue())) {
             return false;
         }
 
-//        Cipher decrypt = Cipher.getInstance("SHA1withRSA");
-//        decrypt.init(Cipher.DECRYPT_MODE, this.serverPublic);
-//        String value = Base64.encode(decrypt.doFinal(Base64.decode(obj.getValue())));
+        System.out.println("[AUTH] Server verified!");
 
+        // Step 3: Get the signed object to send to the server.
+        SignedObject signedObject = this.sign(authObject);
 
-        return false;
+        return !!(service.verifyClient(signedObject));
     }
 }
