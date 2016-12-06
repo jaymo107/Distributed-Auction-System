@@ -86,6 +86,10 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
         // Store the current auction requested.
         Auction auction = this.auctions.get(auctionId);
 
+        if(auction.getSeller().getId() != seller.getId()) {
+            return "ERROR: You didn't create this auction, so you can't end it.";
+        }
+
         // Check if the auction exists.
         if (auction == null) {
             return "ERROR: There was no item found with that ID, please try again.";
