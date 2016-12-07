@@ -1,3 +1,5 @@
+package com.auction;
+
 import java.rmi.RemoteException;
 
 public interface AuctionClient {

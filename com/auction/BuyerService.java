@@ -1,3 +1,5 @@
+package com.auction;
+
 import java.math.BigDecimal;
 import java.rmi.Remote;
 import java.rmi.RemoteException;

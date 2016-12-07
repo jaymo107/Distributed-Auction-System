@@ -1,15 +1,26 @@
+package com.auction;
+
+import org.jgroups.*;
+import org.jgroups.blocks.RequestOptions;
+import org.jgroups.blocks.ResponseMode;
+import org.jgroups.blocks.RpcDispatcher;
+
 import java.io.*;
 import java.net.Inet4Address;
-import java.net.UnknownHostException;
 import java.security.*;
 import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
 import java.security.spec.*;
 import java.util.Random;
-import java.util.Random.*;
+
+import org.jgroups.protocols.PING.*;
+import org.jgroups.protocols.FD.*;
+import org.jgroups.protocols.UDP.*;
+import org.jgroups.protocols.UNICAST3.*;
+import org.jgroups.protocols.pbcast.GMS;
 
 
-public class AuthenticatedClient {
+public class AuthenticatedClient extends ReceiverAdapter {
 
     /**
      * AUTHENTICATION
@@ -21,7 +32,6 @@ public class AuthenticatedClient {
      * 4. Client encrypts and signs data and sends back with extra data i.e. IP address
      * 5. Server then looks up userID(?) gets key and decrypts. Compares and verifies.
      */
-
     private PublicKey publicKey;
     private PrivateKey privateKey;
     private PublicKey serverPublic;
@@ -29,6 +39,9 @@ public class AuthenticatedClient {
     private final String publicKeyDir = keyDir + "public/";
     private final String privateKeyDir = keyDir + "private/";
     private Signature signature;
+    protected Message sendMessage;
+    protected Object receiveMessage;
+    protected Channel channel;
 
     /**
      * Load the keys from the client and server.
@@ -152,6 +165,25 @@ public class AuthenticatedClient {
         return obj;
     }
 
+    private void initialiseChannel(User user, Service service) throws Exception {
+        // Create the channel object.
+        this.channel = new JChannel();
+
+        // Prepare the message
+        this.sendMessage = new Message(null, null, "Test");
+
+        this.channel.setReceiver(new AuthenticatedClient());
+
+//        RpcDispatcher dispatcher = new RpcDispatcher(channel, service);
+//        RequestOptions opts = new RequestOptions(ResponseMode.GET_ALL, 5000);
+
+        // Connect to the clients channel.
+        this.channel.connect("AuctionGroup");
+
+        // Send the message
+        this.channel.send(this.sendMessage);
+    }
+
     /**
      * Authenticate the user with the server.
      *
@@ -161,6 +193,10 @@ public class AuthenticatedClient {
     public synchronized boolean authenticate(User user, Service service) throws Exception {
 
         this.signature = Signature.getInstance("DSA");
+
+        //192.168.10.1:59486
+
+        this.initialiseChannel(user, service);
 
         // Ensure the keys are loaded
         loadKeys(user.getId());
@@ -192,5 +228,18 @@ public class AuthenticatedClient {
         SignedObject signedObject = this.sign(serverAuth);
 
         return !!(service.verifyClient(signedObject));
+    }
+
+    /**
+     * Called when a message gets received,
+     *
+     * @param message
+     */
+    public void receive(Message message) {
+        System.out.println("[MESSAGE] " + message.getObject());
+    }
+
+    public void viewAccepted(View view) {
+        System.out.println(view.toString());
     }
 }

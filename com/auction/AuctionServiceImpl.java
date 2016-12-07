@@ -1,11 +1,10 @@
-import javax.crypto.SealedObject;
+package com.auction;
+
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.math.BigDecimal;
 import java.net.Inet4Address;
-import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.*;

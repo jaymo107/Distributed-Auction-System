@@ -1,3 +1,5 @@
+package com.auction;
+
 import java.io.Serializable;
 /**
  * Base class for storing user information to pass to the

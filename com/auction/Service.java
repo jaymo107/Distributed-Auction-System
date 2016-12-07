@@ -1,6 +1,7 @@
+package com.auction;
+
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
-import java.security.Signature;
 import java.security.SignedObject;
 
 /**

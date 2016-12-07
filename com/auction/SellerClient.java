@@ -1,3 +1,5 @@
+package com.auction;
+
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -94,5 +96,6 @@ public class SellerClient extends AuthenticatedClient implements AuctionClient {
 
     public static void main(String[] args) throws RemoteException {
         new SellerClient();
+
     }
 }

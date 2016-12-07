@@ -1,9 +1,9 @@
+package com.auction;
+
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
-import java.security.*;
 import java.util.Scanner;
-import org.jgroups.*;
 
 /**
  * The client which will bid on an auction.

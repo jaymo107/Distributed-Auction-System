@@ -1,3 +1,5 @@
+package com.auction;
+
 import java.math.BigDecimal;
 import java.util.Date;
 
