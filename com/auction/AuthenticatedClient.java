@@ -178,7 +178,7 @@ public class AuthenticatedClient extends ReceiverAdapter {
 //        RequestOptions opts = new RequestOptions(ResponseMode.GET_ALL, 5000);
 
         // Connect to the clients channel.
-        this.channel.connect("AuctionGroup");
+        this.channel.connect("AuctionCluster");
 
         // Send the message
         this.channel.send(this.sendMessage);
