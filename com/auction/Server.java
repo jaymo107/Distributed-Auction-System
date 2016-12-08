@@ -23,7 +23,7 @@ public class Server extends ReceiverAdapter{
         try {
             Registry registry = LocateRegistry.getRegistry();
 
-            AuctionServiceImpl service = new AuctionServiceImpl();
+            FrontendImpl service = new FrontendImpl();
 
             registry.bind("rmi://localhost/BuyerService", service);
             registry.bind("rmi://localhost/SellerService", service);

@@ -24,7 +24,7 @@ import java.util.List;
  * @date 07/12/2016
  * Auctioning System
  */
-public class FrontendImpl extends RemoteObject implements BuyerService, SellerService, Receiver {
+public class FrontendImpl extends UnicastRemoteObject implements BuyerService, SellerService, Receiver {
 
     private ArrayList<ReplicaManager> replicaManagers;
     private Channel channel;
