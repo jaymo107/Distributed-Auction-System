@@ -11,7 +11,7 @@ import java.rmi.registry.Registry;
  *
  * @author JamesDavies
  */
-public class Server extends ReceiverAdapter{
+public class Server extends ReceiverAdapter {
 
     private Channel channel;
 
@@ -21,12 +21,8 @@ public class Server extends ReceiverAdapter{
      */
     public Server() {
         try {
-            Registry registry = LocateRegistry.getRegistry();
 
-            FrontendImpl service = new FrontendImpl();
-
-            registry.bind("rmi://localhost/BuyerService", service);
-            registry.bind("rmi://localhost/SellerService", service);
+            AuctionServiceImpl service = new AuctionServiceImpl();
 
         } catch (Exception e) {
             System.out.println("Server Error: " + e);

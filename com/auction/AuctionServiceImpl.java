@@ -25,35 +25,33 @@ import java.util.*;
  *
  * @author JamesDavies
  */
-public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerService, SellerService, Receiver {
+public class AuctionServiceImpl extends ReceiverAdapter {
 
     private HashMap<Integer, Auction> auctions;
-    private PublicKey publicKey;
-    private PrivateKey privateKey;
-    private ArrayList<Integer> authenticatedUsers;
-    private Signature signature;
     private Channel channel;
     protected Message sendMessage;
     protected Object receiveMessage;
+    private RpcDispatcher dispatcher;
 
-    public AuctionServiceImpl() throws Exception {
-
-        this.channel = new JChannel();
-        this.channel.connect("AuctionCluster");
-
-        this.sendMessage = new Message(null, null, "[SERVER] Server Connected");
-        this.channel.setReceiver(this);
-        this.channel.send(this.sendMessage);
-
-        this.auctions = new HashMap<>();
-        this.authenticatedUsers = new ArrayList<>();
-        this.loadServerKeys();
-
-        System.out.println("[SERVER] Server started");
+    public AuctionServiceImpl()   {
 
         try {
-            this.signature = Signature.getInstance("DSA");
-        } catch (NoSuchAlgorithmException e) {
+            // Create the channel
+            this.channel = new JChannel();
+
+            // Create the broadcast message
+            //this.sendMessage = new Message(null, null, "[SERVER] Server Connected");
+
+            // Connect to the cluster
+            this.channel.connect("AuctionCluster");
+
+            // Init the dispatcher
+            this.dispatcher = new RpcDispatcher(this.channel, this, this, this);
+            this.auctions = new HashMap<>();
+
+
+            System.out.println("[SERVER] Server started");
+        }catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -155,161 +153,14 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
         return builder.toString();
     }
 
-    /**
-     * Recieves the Auth object, encrypts it, signs it and returns it.
-     *
-     * @param authObject
-     * @return
-     */
-    public synchronized SignedObject verify(Auth authObject) throws RemoteException {
 
-        SignedObject obj = null;
-
-        try {
-
-            authObject.setOriginIp(Inet4Address.getLocalHost().toString());
-            obj = new SignedObject(authObject, this.privateKey, this.signature);
-
-            return obj;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return obj;
-    }
-
-    /**
-     * Verify the client object's signature, store client in
-     * the authenticated clients list for future use.
-     *
-     * @param authObject
-     */
-    public synchronized boolean verifyClient(SignedObject signedObject) throws RemoteException {
-
-        try {
-            // Get the public key of the client
-            Auth auth = (Auth) signedObject.getObject();
-
-            // Get the public key for this user
-            PublicKey key = loadPublicKey(auth.getUserId());
-
-            if (signedObject.verify(key, this.signature)) {
-
-                // Add to list of authenticated users
-                this.authenticatedUsers.add(auth.getUserId());
-
-                System.out.println("[AUTH] User #" + auth.getUserId() + " has been authenticated!");
-
-                return true;
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return false;
-    }
-
-    /**
-     * Create a basic auth object which will be signed by the client and
-     * returned to the server for verification.
-     *
-     * @param auth
-     * @return
-     * @throws RemoteException
-     */
-    public Auth createClientAuth(Auth auth) throws RemoteException {
-        Auth returnObj = auth;
-        try {
-            returnObj.setValue(String.valueOf(new Random().nextInt(100)));
-            returnObj.setOriginIp(Inet4Address.getLocalHost().toString());
-            return returnObj;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    /**
-     * Load the public key of either a user or the server.
-     *
-     * @param user
-     * @return
-     */
-    private PublicKey loadPublicKey(int user) {
-        DSAPublicKey pk = null;
-        String location = (user <= 0) ? "server" : String.valueOf(user);
-
-        try {
-            FileInputStream fs = new FileInputStream(new File("./keys/public/" + location + ".key"));
-            ObjectInputStream ds = new ObjectInputStream(fs);
-            byte[] puKey = (byte[]) ds.readObject();
-            fs.close();
-            ds.close();
-            KeyFactory keyFactory = KeyFactory.getInstance("DSA");
-            KeySpec ks = new X509EncodedKeySpec(puKey);
-            pk = (DSAPublicKey) keyFactory.generatePublic(ks);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return pk;
-    }
-
-    /**
-     * Load the servers public and private key.
-     */
-    private void loadServerKeys() {
-        try {
-            FileInputStream fs = new FileInputStream(new File("./keys/private/server.key"));
-            ObjectInputStream ds = new ObjectInputStream(fs);
-            byte[] prKey = (byte[]) ds.readObject();
-            fs.close();
-            ds.close();
-            KeyFactory keyFactory = KeyFactory.getInstance("DSA");
-            KeySpec ks = new PKCS8EncodedKeySpec(prKey);
-            this.privateKey = (DSAPrivateKey) keyFactory.generatePrivate(ks);
-            this.publicKey = loadPublicKey(0);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void viewAccepted(View view) {
-
-    }
-
-    @Override
-    public void suspect(Address address) {
-
-    }
-
-    @Override
-    public void block() {
-
-    }
-
-    @Override
-    public void unblock() {
-
-    }
-
-    @Override
     public void receive(Message message) {
-
+        System.out.println(message.getObject());
     }
 
-    @Override
-    public void getState(OutputStream outputStream) throws Exception {
-
+    public void viewAccepted(View view) {
+        System.out.println(view.getCreator());
     }
 
-    @Override
-    public void setState(InputStream inputStream) throws Exception {
 
-    }
 }

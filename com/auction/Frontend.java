@@ -16,9 +16,10 @@ public class Frontend implements Remote{
     public static void main(String[] args) throws Exception {
         Registry registry = LocateRegistry.createRegistry(1099);
 
-        FrontendImpl frontend = new FrontendImpl();
+        FrontendImpl service = new FrontendImpl();
 
-        registry.rebind("rmi://localhost/Frontend", frontend);
+        registry.rebind("rmi://localhost/BuyerService", service);
+        registry.rebind("rmi://localhost/SellerService", service);
 
     }
 

@@ -22,8 +22,7 @@ public class BuyerClient extends AuthenticatedClient implements AuctionClient {
     public BuyerClient() throws RemoteException {
 
         try {
-//            Registry registry = LocateRegistry.getRegistry(1099);
-//            this.service = (BuyerService) registry.lookup("rmi://localhost/BuyerService");
+
             this.service = (BuyerService) LocateRegistry.getRegistry().lookup("rmi://localhost/BuyerService");
             // Initialise the input stream for the commands
             input = new Scanner(System.in);
