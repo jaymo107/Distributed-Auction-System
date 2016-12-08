@@ -1,6 +1,7 @@
 package com.auction;
 
 import java.math.BigDecimal;
+import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.Scanner;
@@ -18,7 +19,8 @@ public class SellerClient extends AuthenticatedClient implements AuctionClient {
 
     public SellerClient() throws RemoteException {
         try {
-            this.service = (SellerService) LocateRegistry.getRegistry(1098).lookup("rmi://localhost/Frontend");
+
+            this.service = (SellerService) LocateRegistry.getRegistry(1099).lookup("rmi://localhost/SellerService");
             System.out.println("[AUCTION SELLER SYSTEM]\n\nHello, before we start, please enter the following information...");
             input = new Scanner(System.in);
 
@@ -51,7 +53,7 @@ public class SellerClient extends AuthenticatedClient implements AuctionClient {
     /**
      * Continuously get input for the commands that they can create.
      */
-    public void getInput() throws RemoteException {
+    public void getInput() throws Exception {
         String currentCommand;
         while (true) {
             currentCommand = this.input.nextLine();

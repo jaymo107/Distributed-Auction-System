@@ -15,22 +15,19 @@ public class Server extends ReceiverAdapter{
 
     private Channel channel;
 
-
     /**
      * Create the AuctionServiceImpl object to serve, and bind the RMI host
      * to the registry to be looked up.
      */
     public Server() {
-
         try {
-            Registry registry = LocateRegistry.createRegistry(1098);
+            Registry registry = LocateRegistry.getRegistry();
 
             AuctionServiceImpl service = new AuctionServiceImpl();
 
             registry.bind("rmi://localhost/BuyerService", service);
             registry.bind("rmi://localhost/SellerService", service);
 
-            System.out.println("Auction server started...");
         } catch (Exception e) {
             System.out.println("Server Error: " + e);
         }

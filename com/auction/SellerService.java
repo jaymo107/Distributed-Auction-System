@@ -10,7 +10,7 @@ import java.rmi.RemoteException;
  *
  * @author JamesDavies
  */
-public interface SellerService extends Remote, Service {
+public interface SellerService extends Service {
 
     /**
      * Create a new auction given an item.
@@ -19,7 +19,7 @@ public interface SellerService extends Remote, Service {
      * @param user    The seller identifier.
      * @return String Return the Auction ID
      */
-    String createAuction(Item item, User user) throws RemoteException;
+    String createAuction(Item item, User user) throws Exception;
 
     /**
      * Place a bid in an auction.
@@ -27,7 +27,7 @@ public interface SellerService extends Remote, Service {
      * @param auctionId The ID of the auction to close.
      * @param user      The email of the client closing the auction.
      */
-    String closeAuction(int auctionId, User user) throws RemoteException;
+    String closeAuction(int auctionId, User user) throws Exception;
 
 
 }

@@ -1,11 +1,15 @@
 package com.auction;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
+import org.jgroups.*;
+import org.jgroups.blocks.RequestOptions;
+import org.jgroups.blocks.ResponseMode;
+import org.jgroups.blocks.RpcDispatcher;
+
+import java.io.*;
 import java.math.BigDecimal;
 import java.net.Inet4Address;
 import java.rmi.RemoteException;
+import java.rmi.server.RemoteObject;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.*;
 import java.security.interfaces.DSAPrivateKey;
@@ -21,19 +25,31 @@ import java.util.*;
  *
  * @author JamesDavies
  */
-public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerService, SellerService {
+public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerService, SellerService, Receiver {
 
     private HashMap<Integer, Auction> auctions;
     private PublicKey publicKey;
     private PrivateKey privateKey;
     private ArrayList<Integer> authenticatedUsers;
     private Signature signature;
+    private Channel channel;
+    protected Message sendMessage;
+    protected Object receiveMessage;
 
-    public AuctionServiceImpl() throws RemoteException {
-        super();
+    public AuctionServiceImpl() throws Exception {
+
+        this.channel = new JChannel();
+        this.channel.connect("AuctionCluster");
+
+        this.sendMessage = new Message(null, null, "[SERVER] Server Connected");
+        this.channel.setReceiver(this);
+        this.channel.send(this.sendMessage);
+
         this.auctions = new HashMap<>();
         this.authenticatedUsers = new ArrayList<>();
         this.loadServerKeys();
+
+        System.out.println("[SERVER] Server started");
 
         try {
             this.signature = Signature.getInstance("DSA");
@@ -85,7 +101,7 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
         // Store the current auction requested.
         Auction auction = this.auctions.get(auctionId);
 
-        if(auction.getSeller().getId() != seller.getId()) {
+        if (auction.getSeller().getId() != seller.getId()) {
             return "ERROR: You didn't create this auction, so you can't end it.";
         }
 
@@ -262,4 +278,38 @@ public class AuctionServiceImpl extends UnicastRemoteObject implements BuyerServ
         }
     }
 
+    @Override
+    public void viewAccepted(View view) {
+
+    }
+
+    @Override
+    public void suspect(Address address) {
+
+    }
+
+    @Override
+    public void block() {
+
+    }
+
+    @Override
+    public void unblock() {
+
+    }
+
+    @Override
+    public void receive(Message message) {
+
+    }
+
+    @Override
+    public void getState(OutputStream outputStream) throws Exception {
+
+    }
+
+    @Override
+    public void setState(InputStream inputStream) throws Exception {
+
+    }
 }

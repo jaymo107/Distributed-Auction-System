@@ -11,7 +11,7 @@ import java.rmi.RemoteException;
  *
  * @author JamesDavies
  */
-public interface BuyerService extends Remote, Service {
+public interface BuyerService extends Service {
 
     /**
      * Place a bid in an auction.
@@ -20,7 +20,7 @@ public interface BuyerService extends Remote, Service {
      * @param amount    The amount to bid by.
      * @param user      The user making the bid.
      */
-    String bid(int auctionId, BigDecimal amount, User user) throws RemoteException;
+    String bid(int auctionId, BigDecimal amount, User user) throws Exception;
 
 
 }

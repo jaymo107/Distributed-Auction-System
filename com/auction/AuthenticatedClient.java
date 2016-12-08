@@ -170,18 +170,18 @@ public class AuthenticatedClient extends ReceiverAdapter {
         this.channel = new JChannel();
 
         // Prepare the message
-        this.sendMessage = new Message(null, null, "Test");
+        //this.sendMessage = new Message(null, null, "Test");
 
-        this.channel.setReceiver(new AuthenticatedClient());
+        this.channel.setReceiver(this);
 
 //        RpcDispatcher dispatcher = new RpcDispatcher(channel, service);
 //        RequestOptions opts = new RequestOptions(ResponseMode.GET_ALL, 5000);
 
         // Connect to the clients channel.
-        this.channel.connect("AuctionCluster");
+        //this.channel.connect("");
 
         // Send the message
-        this.channel.send(this.sendMessage);
+        //this.channel.send(this.sendMessage);
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.auction;
 
 import java.net.UnknownHostException;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.security.SignedObject;
 
@@ -11,7 +12,7 @@ import java.security.SignedObject;
  *
  * @author JamesDavies
  */
-public interface Service {
+public interface Service extends Remote{
 
     /**
      * Verify the server by receiving a random value sent by client and return encrypted version with
@@ -21,7 +22,7 @@ public interface Service {
      * @return SignedObject
      * @throws RemoteException
      */
-    SignedObject verify(Auth authObject) throws RemoteException, UnknownHostException;
+    SignedObject verify(Auth authObject) throws Exception;
 
     /**
      * Verify the clients authenticity by decrypting the clients object
@@ -31,7 +32,7 @@ public interface Service {
      * @return boolean
      * @throws RemoteException
      */
-    boolean verifyClient(SignedObject signedObject) throws RemoteException;
+    boolean verifyClient(SignedObject signedObject) throws Exception;
 
     /**
      * Create the auth object for the client to encrypt.
@@ -40,11 +41,11 @@ public interface Service {
      * @return
      * @throws RemoteException
      */
-    Auth createClientAuth(Auth authObject) throws RemoteException;
+    Auth createClientAuth(Auth authObject) throws Exception;
 
     /**
      * Print out a list of the current auctions;
      */
-    String browseAuctions() throws RemoteException;
+    String browseAuctions() throws Exception;
 
 }
