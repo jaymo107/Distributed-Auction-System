@@ -33,25 +33,22 @@ public class AuctionServiceImpl extends ReceiverAdapter {
     protected Object receiveMessage;
     private RpcDispatcher dispatcher;
 
-    public AuctionServiceImpl()   {
+    public AuctionServiceImpl() {
 
         try {
             // Create the channel
             this.channel = new JChannel();
-
-            // Create the broadcast message
-            //this.sendMessage = new Message(null, null, "[SERVER] Server Connected");
 
             // Connect to the cluster
             this.channel.connect("AuctionCluster");
 
             // Init the dispatcher
             this.dispatcher = new RpcDispatcher(this.channel, this, this, this);
+
             this.auctions = new HashMap<>();
 
-
             System.out.println("[SERVER] Server started");
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

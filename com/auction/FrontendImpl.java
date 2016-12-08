@@ -54,10 +54,9 @@ public class FrontendImpl extends UnicastRemoteObject implements BuyerService, S
         this.channel = new JChannel();
         this.channel.setReceiver(this);
         this.reqOpts = new RequestOptions(ResponseMode.GET_ALL, 1000);
-        this.dispatcher = new RpcDispatcher(this.channel, null, this, this);
+        this.dispatcher = new RpcDispatcher(this.channel, this, this, this);
         this.channel.connect("AuctionCluster");
         this.channel.setDiscardOwnMessages(true);
-
         this.authenticatedUsers = new ArrayList<>();
 
         try {
@@ -113,15 +112,34 @@ public class FrontendImpl extends UnicastRemoteObject implements BuyerService, S
 
     }
 
-    private void filterResponses(RspList responses) {
+    /**
+     * Loop over the responses and check that they all match.
+     *
+     * @param responses
+     */
+    private void filterResponses(List responses) {
+
+        boolean isSame = true;
+
+        Object previous = null;
 
         for (int i = 0; i < responses.size(); i++) {
-            System.out.println(responses.get(i));
+
+            if (i <= 0) continue;
+
+            if (!previous.equals(responses.get(i)))
+                isSame = false;
+
+            previous = responses.get(i);
         }
 
+        if (!isSame) {
+            System.out.println("[WARNING] Some of the responses weren't the same");
+            return;
+        }
 
+        System.out.println("[SUCCESS] Responses all match!");
     }
-
 
     /**
      * Recieves the Auth object, encrypts it, signs it and returns it.
@@ -249,24 +267,57 @@ public class FrontendImpl extends UnicastRemoteObject implements BuyerService, S
 
     public String browseAuctions() throws Exception {
         this.responseList = this.dispatcher.callRemoteMethods(null, "browseAuctions", new Object[]{}, new Class[]{}, this.reqOpts);
-        System.out.println(this.responseList.getResults().get(0));
+
+        filterResponses(this.responseList.getResults());
+
         return this.responseList.getResults().get(0).toString();
     }
 
+    /**
+     * Calls the remote method to create an auction.
+     *
+     * @param item The item within the auction to bid for.
+     * @param user The seller identifier.
+     * @return
+     * @throws Exception
+     */
     public String createAuction(Item item, User user) throws Exception {
         this.responseList = this.dispatcher.callRemoteMethods(null, "createAuction", new Object[]{item, user}, new Class[]{Item.class, User.class}, this.reqOpts);
-        System.out.println(this.responseList.getResults().get(0));
+
+        filterResponses(this.responseList.getResults());
+
         return this.responseList.getResults().get(0).toString();
     }
 
+    /**
+     * Calls the remote methods to close the auction.
+     *
+     * @param auctionId The ID of the auction to close.
+     * @param user      The email of the client closing the auction.
+     * @return
+     * @throws Exception
+     */
     public String closeAuction(int auctionId, User user) throws Exception {
         this.responseList = this.dispatcher.callRemoteMethods(null, "closeAuction", new Object[]{auctionId, user}, new Class[]{int.class, User.class}, this.reqOpts);
 
+        filterResponses(this.responseList.getResults());
+
         return this.responseList.getResults().get(0).toString();
     }
 
+    /**
+     * Calls the bid method on the cluster.
+     *
+     * @param auctionId The ID of the auction to bid for.
+     * @param amount    The amount to bid by.
+     * @param user      The user making the bid.
+     * @return
+     * @throws Exception
+     */
     public String bid(int auctionId, BigDecimal amount, User user) throws Exception {
         this.responseList = this.dispatcher.callRemoteMethods(null, "bid", new Object[]{auctionId, amount, user}, new Class[]{int.class, BigDecimal.class, User.class}, this.reqOpts);
+
+        filterResponses(this.responseList.getResults());
 
         return this.responseList.getResults().get(0).toString();
     }
