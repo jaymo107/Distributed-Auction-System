@@ -7,6 +7,7 @@ import org.jgroups.blocks.ResponseMode;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
+import org.jgroups.util.Util;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -31,7 +32,7 @@ import java.util.Random;
  * @date 07/12/2016
  * Auctioning System
  */
-public class FrontendImpl extends UnicastRemoteObject implements BuyerService, SellerService, Receiver, MembershipListener {
+public class FrontendImpl extends UnicastRemoteObject implements BuyerService, SellerService, MembershipListener {
 
     private ArrayList<ReplicaManager> replicaManagers;
     private Channel channel;
@@ -44,6 +45,7 @@ public class FrontendImpl extends UnicastRemoteObject implements BuyerService, S
     private PrivateKey privateKey;
     private ArrayList<Integer> authenticatedUsers;
     private Signature signature;
+    final List<String> state = new LinkedList<String>();
 
     /**
      * @throws Exception
@@ -52,9 +54,8 @@ public class FrontendImpl extends UnicastRemoteObject implements BuyerService, S
         this.replicaManagers = new ArrayList<>();
         this.states = new LinkedList<Object>();
         this.channel = new JChannel();
-        this.channel.setReceiver(this);
         this.reqOpts = new RequestOptions(ResponseMode.GET_ALL, 1000);
-        this.dispatcher = new RpcDispatcher(this.channel, this, this, this);
+        this.dispatcher = new RpcDispatcher(this.channel, null, this, this);
         this.channel.connect("AuctionCluster");
         this.channel.setDiscardOwnMessages(true);
         this.authenticatedUsers = new ArrayList<>();
@@ -83,15 +84,16 @@ public class FrontendImpl extends UnicastRemoteObject implements BuyerService, S
         }
     }
 
-    @Override
-    public void getState(OutputStream outputStream) throws Exception {
+    public void getState(OutputStream output) throws Exception {
+
+        synchronized (state) {
+
+            Util.objectToStream(state, new DataOutputStream(output));
+
+        }
 
     }
 
-    @Override
-    public void setState(InputStream inputStream) throws Exception {
-
-    }
 
     public void viewAccepted(View view) {
 
@@ -121,14 +123,17 @@ public class FrontendImpl extends UnicastRemoteObject implements BuyerService, S
 
         boolean isSame = true;
 
+        if (responses == null) return;
+
         Object previous = null;
 
         for (int i = 0; i < responses.size(); i++) {
 
-            if (i <= 0) continue;
+            if (i > 0) {
 
-            if (!previous.equals(responses.get(i)))
-                isSame = false;
+                if (!previous.equals(responses.get(i)))
+                    isSame = false;
+            }
 
             previous = responses.get(i);
         }

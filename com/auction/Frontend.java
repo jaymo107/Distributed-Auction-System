@@ -18,8 +18,8 @@ public class Frontend implements Remote{
 
         FrontendImpl service = new FrontendImpl();
 
-        registry.rebind("rmi://localhost/BuyerService", service);
-        registry.rebind("rmi://localhost/SellerService", service);
+        registry.bind("rmi://localhost/BuyerService", service);
+        registry.bind("rmi://localhost/SellerService", service);
 
     }
 

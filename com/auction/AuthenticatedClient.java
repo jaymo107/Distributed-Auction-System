@@ -39,9 +39,6 @@ public class AuthenticatedClient extends ReceiverAdapter {
     private final String publicKeyDir = keyDir + "public/";
     private final String privateKeyDir = keyDir + "private/";
     private Signature signature;
-    protected Message sendMessage;
-    protected Object receiveMessage;
-    protected Channel channel;
 
     /**
      * Load the keys from the client and server.
@@ -165,25 +162,6 @@ public class AuthenticatedClient extends ReceiverAdapter {
         return obj;
     }
 
-    private void initialiseChannel(User user, Service service) throws Exception {
-        // Create the channel object.
-        this.channel = new JChannel();
-
-        // Prepare the message
-        //this.sendMessage = new Message(null, null, "Test");
-
-        this.channel.setReceiver(this);
-
-//        RpcDispatcher dispatcher = new RpcDispatcher(channel, service);
-//        RequestOptions opts = new RequestOptions(ResponseMode.GET_ALL, 5000);
-
-        // Connect to the clients channel.
-        //this.channel.connect("");
-
-        // Send the message
-        //this.channel.send(this.sendMessage);
-    }
-
     /**
      * Authenticate the user with the server.
      *
@@ -193,10 +171,6 @@ public class AuthenticatedClient extends ReceiverAdapter {
     public synchronized boolean authenticate(User user, Service service) throws Exception {
 
         this.signature = Signature.getInstance("DSA");
-
-        //192.168.10.1:59486
-
-        this.initialiseChannel(user, service);
 
         // Ensure the keys are loaded
         loadKeys(user.getId());
@@ -230,16 +204,4 @@ public class AuthenticatedClient extends ReceiverAdapter {
         return !!(service.verifyClient(signedObject));
     }
 
-    /**
-     * Called when a message gets received,
-     *
-     * @param message
-     */
-    public void receive(Message message) {
-        System.out.println("[MESSAGE] " + message.getObject());
-    }
-
-    public void viewAccepted(View view) {
-        System.out.println(view.toString());
-    }
 }

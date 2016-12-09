@@ -4,6 +4,7 @@ import org.jgroups.*;
 import org.jgroups.blocks.RequestOptions;
 import org.jgroups.blocks.ResponseMode;
 import org.jgroups.blocks.RpcDispatcher;
+import org.jgroups.util.Util;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -32,6 +33,8 @@ public class AuctionServiceImpl extends ReceiverAdapter {
     protected Message sendMessage;
     protected Object receiveMessage;
     private RpcDispatcher dispatcher;
+    final List<String> state = new LinkedList<String>();
+    private int auctionCounter;
 
     public AuctionServiceImpl() {
 
@@ -44,6 +47,10 @@ public class AuctionServiceImpl extends ReceiverAdapter {
 
             // Init the dispatcher
             this.dispatcher = new RpcDispatcher(this.channel, this, this, this);
+
+            this.channel.getState(null, 0);
+
+            this.auctionCounter = 0;
 
             this.auctions = new HashMap<>();
 
@@ -62,7 +69,9 @@ public class AuctionServiceImpl extends ReceiverAdapter {
      * @return String     Return the Auction message
      */
     public String createAuction(Item item, User seller) throws RemoteException {
-        Auction auction = new Auction(item, seller);
+        int id = this.auctionCounter++;
+        Auction auction = new Auction(item, seller, id);
+
         int key = auction.getId();
         auctions.put(key, auction);
         return "Auction created successfully with ID " + key;
@@ -143,7 +152,7 @@ public class AuctionServiceImpl extends ReceiverAdapter {
             builder.append("Auction ID: [" + a.getId() + "]\n");
             builder.append("Created: " + a.getCreatedAt().toString() + "\n");
             builder.append("Description: " + a.getItem().getDescription() + "\n");
-            builder.append("Current Bid: £" + a.getCurrentBid() + "\n");
+            builder.append("Current Bid: " + a.getCurrentBid() + " GBP\n");
             builder.append("-------------------------------------------------------------------\n\n");
         }
 
@@ -151,13 +160,41 @@ public class AuctionServiceImpl extends ReceiverAdapter {
     }
 
 
-    public void receive(Message message) {
-        System.out.println(message.getObject());
+    public void receive(Message msg) {
+
     }
 
     public void viewAccepted(View view) {
         System.out.println(view.getCreator());
     }
 
+    public void getState(OutputStream output) throws Exception {
 
+        Object[] arrayToSend = new Object[]{auctions, this.auctionCounter};
+
+        synchronized (state) {
+            Util.objectToStream(arrayToSend, new DataOutputStream(output));
+            System.out.println("Get state is being called");
+        }
+    }
+
+    public void setState(InputStream input) throws Exception {
+
+        Object[] list;
+
+        list = (Object[]) Util.objectFromStream(new DataInputStream(input));
+
+        synchronized (state) {
+
+            HashMap<Integer, Auction> auctionHashmapList = (HashMap<Integer, Auction>) list[0];
+            Integer counterToSet = (Integer) list[1];
+
+            auctions = auctionHashmapList;
+            this.auctionCounter = counterToSet;
+
+            System.out.println(auctionHashmapList);
+
+            System.out.println("Counter to set: " + counterToSet);
+        }
+    }
 }

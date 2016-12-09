@@ -16,7 +16,7 @@ public class Auction {
     private User highestBidder;
     private Date createdAt;
     private BigDecimal currentBid;
-    private static int auctionIncrementId = 0;
+    public int auctionIncrementId = 0;
 
     /**
      * Create an Auction with the item to sell and the seller.
@@ -24,11 +24,11 @@ public class Auction {
      * @param item   The item within the auction.
      * @param seller The identifier of the seller.
      */
-    public Auction(Item item, User seller) {
+    public Auction(Item item, User seller, int id) {
         this.item = item;
         this.seller = seller;
         this.createdAt = new Date();
-        this.id = ++auctionIncrementId;
+        this.id = id;
         this.currentBid = item.getStartingPrice();
         this.highestBidder = new User(0);
     }
