@@ -22,5 +22,4 @@ public interface BuyerService extends Service {
      */
     String bid(int auctionId, BigDecimal amount, User user) throws Exception;
 
-
 }
